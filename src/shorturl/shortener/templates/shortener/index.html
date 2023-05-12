@@ -1,0 +1,99 @@
+{% extends "shortener/base.html" %}
+
+{% block title %}URL Shortener - Home{% endblock %}
+
+{% block content %}
+<div style="margin-top: 1em;">
+{% block userinfo%} Sin información del usuario {% endblock %}
+</div>
+<div style="margin-top: 1em;">
+	<button type="button" class="btn btn-outline-primary" data-bs-toggle="modal" data-bs-target="#addURLModal">Add URL</button>  
+	<button type="button" class="btn btn-outline-primary">Users (solo admin)</button>
+</div>
+<div style="margin-top: 1em;">
+	<table class="table table-striped">
+	<tr>
+		<th>URL original</th>
+		<th>URL short</th>
+		<th>Acciones</th>
+	</tr>
+	<tr>
+		<td><a href="#" target="_blank">http://asdasd.com.ar/adad...</a></td>
+		<td><a href="#" target="_blank">http://mi_siito.com/sfrgt3d</a></td>
+		<td>
+			<button type="button" class="btn btn-outline-primary">Copiar URL</button>
+			<button type="button" class="btn btn-outline-info" data-bs-toggle="modal" data-bs-target="#statsURLModal">Estadísticas</button>  
+			<button type="button" class="btn btn-outline-danger" data-bs-toggle="modal" data-bs-target="#deleteURLModal">Borrar</button>  
+		</td>
+	</tr>
+	</table>
+</div>
+{% endblock %}
+
+
+{% block modals %}
+<!-- Add URL Modal -->
+<div class="modal fade" id="addURLModal" tabindex="-1" aria-labelledby="addURLModalLabel" aria-hidden="true">
+	<div class="modal-dialog">
+ 		<div class="modal-content">
+ 			<div class="modal-header">
+ 				<h1 class="modal-title fs-5" id="addURLModalLabel">Add URL</h1>
+ 				<button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+			</div>
+ 			<div class="modal-body">
+				<form>
+					<div>
+						<label class="form-url-label" for="urlToAdd">URL: </label>
+						<input type="url" class="form-url-input" id="urlToAdd">
+					</div>
+				</form>
+			</div>
+ 			<div class="modal-footer">
+				<button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+				<button type="button" class="btn btn-primary">Save URL</button>
+			</div>
+		</div>
+	</div>
+</div>
+
+<!-- Stats Modal -->
+<div class="modal fade" id="statsURLModal" tabindex="-1" aria-labelledby="statsURLModalLabel" aria-hidden="true">
+	<div class="modal-dialog">
+ 		<div class="modal-content">
+ 			<div class="modal-header">
+ 				<h1 class="modal-title fs-5" id="StatsURLModalLabel">Statistics</h1>
+ 				<button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+				</div>
+ 			<div class="modal-body">
+				<ul>
+					<li><b>Date added:</b> 12/2/23</li>
+					<li><b>Times clicked:</b> 344</li>
+				</ul>
+			</div>
+ 			<div class="modal-footer">
+				<button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+			</div>
+		</div>
+	</div>
+</div>
+
+<!-- Delete URL Modal -->
+<div class="modal fade" id="deleteURLModal" tabindex="-1" aria-labelledby="deleteURLModalLabel" aria-hidden="true">
+	<div class="modal-dialog">
+ 		<div class="modal-content">
+ 			<div class="modal-header">
+ 				<h1 class="modal-title fs-5" id="deleteURLModalLabel">Delete URL</h1>
+ 				<button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+				</div>
+ 			<div class="modal-body">
+				<p>¿Borrar la URL?</p>
+				<p>Se borrarán también las estadísticas relacionadas.</p>
+			</div>
+ 			<div class="modal-footer">
+				<button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+				<button type="button" class="btn btn-primary">Borrar URL</button>
+			</div>
+		</div>
+	</div>
+</div>
+{% endblock %}

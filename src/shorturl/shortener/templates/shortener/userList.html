@@ -1,0 +1,80 @@
+{% extends "shortener/base.html" %}
+
+{% block title %}URL Shortener - List of users{% endblock %}
+
+{% block content %}
+<div style="margin-top: 1em;">
+	<table class="table table-striped">
+	<tr>
+		<th>Nombre</th>
+		<th>Apellido</th>
+		<th>Nombre de usuario</th>
+		<th>Email</th>
+		<th>Acciones</th>
+	</tr>
+	<tr>
+		<td>Juan</td>
+		<td>Perez</td>
+		<td>jperez@example.com</td>
+		<td>jperez</td>
+		<td>
+			<button type="button" class="btn btn-outline-info" data-bs-toggle="modal" data-bs-target="#changePasswordUserModal">Cambiar clave</button>  
+			<button type="button" class="btn btn-outline-danger" data-bs-toggle="modal" data-bs-target="#deleteUserModal">Borrar</button>  
+		</td>
+	</tr>
+	</table>
+</div>
+{% endblock %}
+
+
+{% block modals %}
+
+<!-- Change Password Modal -->
+<div class="modal fade" id="changePasswordUserModal" tabindex="-1" aria-labelledby="changePasswordUserModalLabel" aria-hidden="true">
+	<div class="modal-dialog">
+ 		<div class="modal-content">
+ 			<div class="modal-header">
+ 				<h1 class="modal-title fs-5" id="changePasswordUserModalLabel">Add URL</h1>
+ 				<button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+			</div>
+ 			<div class="modal-body">
+				<form>
+					<div>
+						<label class="form-password-label" for="password1">Clave: </label>
+						<input type="psasword" class="form-password-input" id="password1">
+					</div>
+					<div>
+						<label class="form-password-label" for="password2">Repetir Clave: </label>
+						<input type="psasword" class="form-password-input" id="password2">
+					</div>
+				</form>
+			</div>
+ 			<div class="modal-footer">
+				<button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+				<button type="button" class="btn btn-primary">Change Password</button>
+			</div>
+		</div>
+	</div>
+</div>
+
+<!-- Delete URL Modal -->
+<div class="modal fade" id="deleteUserModal" tabindex="-1" aria-labelledby="deleteUserModalLabel" aria-hidden="true">
+	<div class="modal-dialog">
+ 		<div class="modal-content">
+ 			<div class="modal-header">
+ 				<h1 class="modal-title fs-5" id="deleteUserModalLabel">Delete User</h1>
+ 				<button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+				</div>
+ 			<div class="modal-body">
+				<p>¿Borrar el usuario?</p>
+				<p>Se borrarán también las URLS y estadísticas relacionadas.</p>
+			</div>
+ 			<div class="modal-footer">
+				<button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+				<button type="button" class="btn btn-primary">Borrar Usuario</button>
+			</div>
+		</div>
+	</div>
+</div>
+
+{% endblock %}
