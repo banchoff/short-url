@@ -11,22 +11,30 @@
 	<button type="button" class="btn btn-outline-primary">Users (solo admin)</button>
 </div>
 <div style="margin-top: 1em;">
-	<table class="table table-striped">
-	<tr>
-		<th>URL original</th>
-		<th>URL short</th>
-		<th>Acciones</th>
-	</tr>
-	<tr>
-		<td><a href="#" target="_blank">http://asdasd.com.ar/adad...</a></td>
-		<td><a href="#" target="_blank">http://mi_siito.com/sfrgt3d</a></td>
-		<td>
-			<button type="button" class="btn btn-outline-primary">Copiar URL</button>
-			<button type="button" class="btn btn-outline-info" data-bs-toggle="modal" data-bs-target="#statsURLModal">Estadísticas</button>  
-			<button type="button" class="btn btn-outline-danger" data-bs-toggle="modal" data-bs-target="#deleteURLModal">Borrar</button>  
-		</td>
-	</tr>
-	</table>
+  {% if urls %}
+  <table class="table table-striped">
+    <tr>
+      <th>URL original</th>
+      <th>URL short</th>
+      <th>Acciones</th>
+    </tr>
+    {% for aURL in urls %}
+    <tr>
+      <td><a href="#" target="_blank">{{ aURL.original }}</a></td>
+      <td><a href="#" target="_blank">{{ aURL.shortened }}</a></td>
+      <td>
+	<button type="button" class="btn btn-outline-primary">Copiar URL</button>
+	<button type="button" class="btn btn-outline-info" data-bs-toggle="modal" data-bs-target="#statsURLModal">Estadísticas</button>  
+	<button type="button" class="btn btn-outline-danger" data-bs-toggle="modal" data-bs-target="#deleteURLModal">Borrar</button>  
+      </td>
+    </tr>
+    {% endfor %}
+  </table>
+  {% else %}
+  <div class="alert alert-warning" role="alert">
+  Aún no hay URLs cargadas.
+  </div>
+  {% endif %}
 </div>
 {% endblock %}
 

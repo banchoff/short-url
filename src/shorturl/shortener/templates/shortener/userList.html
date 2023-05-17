@@ -2,39 +2,96 @@
 
 {% block title %}URL Shortener - List of users{% endblock %}
 
+{% block titleH1 %}URL Shortener - List of users{% endblock %}
+
 {% block content %}
 <div style="margin-top: 1em;">
-	<table class="table table-striped">
-	<tr>
-		<th>Nombre</th>
-		<th>Apellido</th>
-		<th>Nombre de usuario</th>
-		<th>Email</th>
-		<th>Acciones</th>
-	</tr>
-	<tr>
-		<td>Juan</td>
-		<td>Perez</td>
-		<td>jperez@example.com</td>
-		<td>jperez</td>
-		<td>
-			<button type="button" class="btn btn-outline-info" data-bs-toggle="modal" data-bs-target="#changePasswordUserModal">Cambiar clave</button>  
-			<button type="button" class="btn btn-outline-danger" data-bs-toggle="modal" data-bs-target="#deleteUserModal">Borrar</button>  
-		</td>
-	</tr>
-	</table>
+	<button type="button" class="btn btn-outline-primary" data-bs-toggle="modal" data-bs-target="#addUserModal">Add User</button>  
+</div>
+<div style="margin-top: 1em;">
+  {% if users %}  
+  <table class="table table-striped">
+    <tr>
+      <th>Nombre</th>
+      <th>Apellido</th>
+      <th>Nombre de usuario</th>
+      <th>Email</th>
+      <th>Acciones</th>
+    </tr>
+    {% for aUser in users %}
+    <tr>
+      <td>{{ aUser.name }}</td>
+      <td>{{ aUser.lastname }}</td>
+      <td>{{ aUser.username }}</td>
+      <td>{{ aUser.email }}</td>
+      <td>
+	<button type="button" class="btn btn-outline-primary" data-bs-toggle="modal" data-bs-target="#toggleAdmin">Hacer admin</button>			<button type="button" class="btn btn-outline-info" data-bs-toggle="modal" data-bs-target="#changePasswordUserModal">Cambiar clave</button>  
+	<button type="button" class="btn btn-outline-danger" data-bs-toggle="modal" data-bs-target="#deleteUserModal">Borrar</button>
+      </td>
+    </tr>
+    {% endfor %}
+  </table>
+  {% else %}
+  <div class="alert alert-warning" role="alert">
+  Aún no hay Usuarios cargados.
+  </div>
+  {% endif %}  
 </div>
 {% endblock %}
 
 
 {% block modals %}
 
+<!-- Add User Modal -->
+<div class="modal fade" id="addUserModal" tabindex="-1" aria-labelledby="addUserModalLabel" aria-hidden="true">
+	<div class="modal-dialog">
+ 		<div class="modal-content">
+ 			<div class="modal-header">
+ 				<h1 class="modal-title fs-5" id="addUserModalLabel">Add User</h1>
+ 				<button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+			</div>
+ 			<div class="modal-body">
+			  <form>
+			    <div>
+			      <label class="form-name-label" for="name">Name: </label>
+			      <input type="text" class="form-name-input" id="name">
+			    </div>
+			    <div>
+			      <label class="form-lastname-label" for="lastname">Lastname: </label>
+			      <input type="text" class="form-lastname-input" id="lastname">
+			    </div>
+			    <div>
+			      <label class="form-username-label" for="username">Username: </label>
+			      <input type="text" class="form-username-input" id="username">
+			    </div>
+			    <div>
+			      <label class="form-email-label" for="email">Email: </label>
+			      <input type="email" class="form-email-input" id="email">
+			    </div>
+			    <div>
+			    <label class="form-password-label" for="password1">Clave: </label>
+			      <input type="password" class="form-password-input" id="password1">
+			    </div>
+			    <div>
+			      <label class="form-password-label" for="password2">Repetir Clave: </label>
+			      <input type="password" class="form-password-input" id="password2">
+			    </div>
+			  </form>
+			</div>
+ 			<div class="modal-footer">
+			  <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+			  <button type="button" class="btn btn-primary">Add User</button>
+			</div>
+		</div>
+	</div>
+</div>
+
 <!-- Change Password Modal -->
 <div class="modal fade" id="changePasswordUserModal" tabindex="-1" aria-labelledby="changePasswordUserModalLabel" aria-hidden="true">
 	<div class="modal-dialog">
  		<div class="modal-content">
  			<div class="modal-header">
- 				<h1 class="modal-title fs-5" id="changePasswordUserModalLabel">Add URL</h1>
+ 				<h1 class="modal-title fs-5" id="changePasswordUserModalLabel">Change password</h1>
  				<button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
 			</div>
  			<div class="modal-body">
@@ -56,6 +113,7 @@
 		</div>
 	</div>
 </div>
+
 
 <!-- Delete URL Modal -->
 <div class="modal fade" id="deleteUserModal" tabindex="-1" aria-labelledby="deleteUserModalLabel" aria-hidden="true">

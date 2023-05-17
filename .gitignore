@@ -51,3 +51,6 @@ Thumbs.db
 
 *~
 *.swp
+
+
+src/shorturl/db.sqlite3

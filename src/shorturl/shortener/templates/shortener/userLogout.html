@@ -1,0 +1,53 @@
+{% extends "shortener/base.html" %}
+
+{% block title %}URL Shortener - Logout{% endblock %}
+
+{% block header %}{% endblock %}
+
+{% block titleH1 %}{% endblock %}
+
+{% block content %}
+<div style="margin-top: 1em;">
+  <div class="p-5 mb-4 bg-body-tertiary rounded-3">
+    <div class="container-fluid py-5">
+      <h1 class="display-5 fw-bold">URL Shortener</h1>
+      <p class="col-md-8 fs-4">You've just logged out.</p>
+      <p class="col-md-8 fs-4">See you soon!</p>
+      <button type="button" class="btn btn-primary btn-lg" data-bs-toggle="modal" data-bs-target="#loginModal">Log In</button>  
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block modals %}
+<!-- Login Modal -->
+<div class="modal fade" id="loginModal" tabindex="-1" aria-labelledby="loginModalLabel" aria-hidden="true">
+	<div class="modal-dialog">
+ 		<div class="modal-content">
+ 			<div class="modal-header">
+ 				<h1 class="modal-title fs-5" id="loginModalLabel">Login</h1>
+ 				<button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+			</div>
+ 			<div class="modal-body">
+				<form>
+					<div>
+					  <label class="form-username-label" for="username">Username: </label>
+					  <input type="text" class="form-username-input" id="username">
+					</div>
+					<div>
+					  <label class="form-password-label" for="password">Password: </label>
+					  <input type="password" class="form-password-input" id="password">
+					</div>
+				</form>
+			</div>
+ 			<div class="modal-footer">
+				<button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+				<button type="button" class="btn btn-primary">Login</button>
+			</div>
+		</div>
+	</div>
+</div>
+
+{% endblock %}
+
+
