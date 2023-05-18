@@ -11,7 +11,8 @@ class URLUserCreationForm(UserCreationForm):
 class URLUserChangeForm(UserChangeForm):
     class Meta:
         model = URLUser
-        fields = ("username", "email")
+        #fields = ("username", "email")
+        fields = ("email",)
         
 
 class ShortenedURLForm(forms.ModelForm):
@@ -19,6 +20,21 @@ class ShortenedURLForm(forms.ModelForm):
     class Meta:
         model = ShortenedURL
         fields = ["original"]
+        labels = {
+            "original": 'URL'
+        }
+        
+        # help_texts = {
+        #     "name": _("Some useful help text."),
+        # }
+        # error_messages = {
+        #     "name": {
+        #         "max_length": _("This writer's name is too long."),
+        #     },
+        # }
+        # widgets = {
+        #     "original": Textarea(attrs={"cols": 80, "rows": 20}),
+        # }
 
 # class URLUserForm(forms.ModelForm):
 #     template_name = "shortener/shortenedURLForm.html"

@@ -4,9 +4,11 @@ from .views import SignUpView
 
 urlpatterns = [
     path("", views.index, name="index"),
+    path("url/add/ajax", views.urlAddAjax, name="urladdajax"),
+    path("user/add/ajax", views.userAddAjax, name="useraddajax"),
     path("url/add", views.urlAdd, name="urladd"),
 #    path("user/add", views.userAdd, name="useradd"),
-#    path("user/edit", views.userEdit, name="useredit"),
+    path("user/edit", views.userEdit, name="useredit"),
     path("user/login", views.userLogin, name="userlogin"),
     path("user/logout", views.userLogout, name="userlogout"),
     path("user/list", views.userList, name="userlist"),

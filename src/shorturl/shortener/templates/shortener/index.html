@@ -4,11 +4,22 @@
 
 {% block content %}
 <div style="margin-top: 1em;">
-{% block userinfo%} Sin información del usuario {% endblock %}
+  {% block userinfo%}
+  <a class="btn btn-outline-secondary" href="{% url 'useredit' %}" role="button">
+    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-person-circle" viewBox="0 0 16 16">
+      <path d="M11 6a3 3 0 1 1-6 0 3 3 0 0 1 6 0z"/>
+      <path fill-rule="evenodd" d="M0 8a8 8 0 1 1 16 0A8 8 0 0 1 0 8zm8-7a7 7 0 0 0-5.468 11.37C3.242 11.226 4.805 10 8 10s4.757 1.225 5.468 2.37A7 7 0 0 0 8 1z"/>
+    </svg>
+    {{ user.username }} ({{ user.email }})
+  </a>
+  {% endblock %}
 </div>
 <div style="margin-top: 1em;">
-	<button type="button" class="btn btn-outline-primary" data-bs-toggle="modal" data-bs-target="#addURLModal">Add URL</button>  
-	<button type="button" class="btn btn-outline-primary">Users (solo admin)</button>
+  <button type="button" class="btn btn-outline-primary" data-bs-toggle="modal" data-bs-target="#addURLModal">Add URL</button>
+  {% if user.is_superuser %}
+  <a class="btn btn-outline-primary" href="{% url 'userlist' %}" role="button">Users</a>
+  <!-- <button type="button" class="btn btn-outline-primary">Users</button> -->
+  {% endif %}
 </div>
 <div style="margin-top: 1em;">
   {% if urls %}
@@ -49,16 +60,16 @@
  				<button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
 			</div>
  			<div class="modal-body">
-				<form>
-					<div>
-						<label class="form-url-label" for="urlToAdd">URL: </label>
-						<input type="url" class="form-url-input" id="urlToAdd">
-					</div>
-				</form>
+			  <div class="" id="add_url_alerts" role="alert"></div>
+			  <form id="addURLForm" method="post" action="{% url 'urladdajax' %}">
+			    {% csrf_token %}
+			    {{ add_url_form }}
+			    <button id="addURLSubmit" type="submit" class="btn btn-primary">Add URL</button>
+			  </form>
 			</div>
  			<div class="modal-footer">
 				<button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-				<button type="button" class="btn btn-primary">Save URL</button>
+				<!-- <button type="button" class="btn btn-primary">Save URL</button> -->
 			</div>
 		</div>
 	</div>
@@ -73,10 +84,11 @@
  				<button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
 				</div>
  			<div class="modal-body">
-				<ul>
-					<li><b>Date added:</b> 12/2/23</li>
-					<li><b>Times clicked:</b> 344</li>
-				</ul>
+			  <div class="" id="stats_url_alerts" role="alert"></div>
+			  <ul>
+			    <li><b>Date added:</b> 12/2/23</li>
+			    <li><b>Times clicked:</b> 344</li>
+			  </ul>
 			</div>
  			<div class="modal-footer">
 				<button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
@@ -94,8 +106,9 @@
  				<button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
 				</div>
  			<div class="modal-body">
-				<p>¿Borrar la URL?</p>
-				<p>Se borrarán también las estadísticas relacionadas.</p>
+			  <div class="" id="delete_url_alerts" role="alert"></div>
+			  <p>¿Borrar la URL?</p>
+			  <p>Se borrarán también las estadísticas relacionadas.</p>
 			</div>
  			<div class="modal-footer">
 				<button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
@@ -104,4 +117,47 @@
 		</div>
 	</div>
 </div>
+
+
+<script>  
+  $(document).ready(function(){
+
+      // Evitamos que se recargue la pagina
+      $("#addURLForm").submit(function(e){
+            e.preventDefault();
+      });
+
+      // Configuramos el envio por AJAX.
+      // Tener en cuenta que hay que copiar el token CSRF.
+      $('#addURLSubmit').click(function(e){
+          $.ajax({
+              url: '{% url "urladdajax" %}',
+              type: 'post',
+              data: {
+		  'original': $("#id_original").val(),
+		  'csrfmiddlewaretoken': $('input[name="csrfmiddlewaretoken"]').val()
+	      },
+              success: function(response){
+                  $('#alerts').html(response.success);
+		  $('#alerts').addClass("alert alert-success");
+		  // TODO: recargar la tabla con URLs
+                  $('#addURLModal').modal('hide'); 
+              },
+	      error: function(response){
+		  $('#add_url_alerts').html(response.responseJSON.error);
+		  $('#add_url_alerts').addClass("alert alert-danger");
+	      }
+          });
+      });
+
+      // Cuando el modal se cierra, se borran los datos, las clases y mensajes.
+      $('#addURLModal').on('hidden.bs.modal', function () {
+	  $("#id_original").val('');	  
+	  $('#add_url_alerts').html('');
+	  $('#add_url_alerts').removeClass();
+      });
+      
+  });  
+</script>
+
 {% endblock %}

@@ -5,5 +5,10 @@
 {% block titleH1 %}URL Shortener - Edit user{% endblock %}
 
 {% block content %}
-EDIT DEL USUARIO
+
+{{ user.username }} ({{ user.email }})
+
+{{ form.as_div }}
+
+
 {% endblock %}

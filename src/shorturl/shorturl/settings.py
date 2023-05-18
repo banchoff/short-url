@@ -73,7 +73,7 @@ TEMPLATES = [
 ]
 
 
-LOGIN_REDIRECT_URL = "home"
+LOGIN_REDIRECT_URL = "/shortener/"
 LOGOUT_REDIRECT_URL = "home"
 
 WSGI_APPLICATION = 'shorturl.wsgi.application'
