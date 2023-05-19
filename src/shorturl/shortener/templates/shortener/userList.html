@@ -20,13 +20,14 @@
     </tr>
     {% for aUser in users %}
     <tr>
-      <td>{{ aUser.name }}</td>
-      <td>{{ aUser.lastname }}</td>
+      <td>{{ aUser.first_name }}</td>
+      <td>{{ aUser.last_name }}</td>
       <td>{{ aUser.username }}</td>
       <td>{{ aUser.email }}</td>
       <td>
-	<button type="button" class="btn btn-outline-primary" data-bs-toggle="modal" data-bs-target="#toggleAdmin">Hacer admin</button>			<button type="button" class="btn btn-outline-info" data-bs-toggle="modal" data-bs-target="#changePasswordUserModal">Cambiar clave</button>  
-	<button type="button" class="btn btn-outline-danger" data-bs-toggle="modal" data-bs-target="#deleteUserModal">Borrar</button>
+	<button data-user-id="{{ aUser.id }}" type="button" class="btn btn-outline-primary toggleUserAdminButton" id="toggleUserAdminButton-{{ aUser.id }}">{% if aUser.is_superuser %}Quitar admin{% else %}Hacer admin{% endif %}</button>
+	<button data-user-id="{{ aUser.id }}" type="button" class="btn btn-outline-info changePasswordModalButton" data-bs-toggle="modal" data-bs-target="#changePasswordUserModal">Cambiar clave</button>  
+	<button data-user-id="{{ aUser.id }}" data-user-username="{{ aUser.username }}" type="button" class="btn btn-outline-danger deleteUserModalButton" data-bs-toggle="modal" data-bs-target="#deleteUserModal" id="deleteUserModalButton-{{ aUser.id }}">Borrar</button>
       </td>
     </tr>
     {% endfor %}
@@ -44,86 +45,230 @@
 
 <!-- Add User Modal -->
 <div class="modal fade" id="addUserModal" tabindex="-1" aria-labelledby="addUserModalLabel" aria-hidden="true">
-	<div class="modal-dialog">
- 		<div class="modal-content">
- 			<div class="modal-header">
- 				<h1 class="modal-title fs-5" id="addUserModalLabel">Add User</h1>
- 				<button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-			</div>
- 			<div class="modal-body">
-			  <div class="" id="add_user_alerts" role="alert"></div>
-			  <form id="addUserForm" method="post" action="{% url 'useraddajax' %}">
-			    {% csrf_token %}
-			    {{ add_user_form }}
-			    <button id="addUserSubmit" type="submit" class="btn btn-primary">Add User</button>
-			  </form>
-			</div>
- 			<div class="modal-footer">
-			  <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-			</div>
-		</div>
-	</div>
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+ 	<h1 class="modal-title fs-5" id="addUserModalLabel">Add User</h1>
+ 	<button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+	<div class="" id="add_user_alerts" role="alert"></div>
+	<form id="addUserForm" method="post" action="{% url 'useraddajax' %}">
+	  {% csrf_token %}
+	  {{ add_user_form }}
+	  <button id="addUserSubmit" type="submit" class="btn btn-primary">Add User</button>
+	</form>
+      </div>
+      <div class="modal-footer">
+	<button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+      </div>
+    </div>
+  </div>
 </div>
 
 <!-- Change Password Modal -->
 <div class="modal fade" id="changePasswordUserModal" tabindex="-1" aria-labelledby="changePasswordUserModalLabel" aria-hidden="true">
-	<div class="modal-dialog">
- 		<div class="modal-content">
- 			<div class="modal-header">
- 				<h1 class="modal-title fs-5" id="changePasswordUserModalLabel">Change password</h1>
- 				<button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-			</div>
- 			<div class="modal-body">
-				<form>
-					<div>
-						<label class="form-password-label" for="password1">Clave: </label>
-						<input type="psasword" class="form-password-input" id="password1">
-					</div>
-					<div>
-						<label class="form-password-label" for="password2">Repetir Clave: </label>
-						<input type="psasword" class="form-password-input" id="password2">
-					</div>
-				</form>
-			</div>
- 			<div class="modal-footer">
-				<button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-				<button type="button" class="btn btn-primary">Change Password</button>
-			</div>
-		</div>
-	</div>
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+ 	<h1 class="modal-title fs-5" id="changePasswordUserModalLabel">Change password</h1>
+ 	<button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+	<div class="" id="change_password_alerts" role="alert"></div>
+	<form action="{% url 'userchangepwajax' %}" method="post" id="changeUserPasswordForm">
+	  <input type="hidden" name="id" id="UserChangePassword">
+	  <div>
+	    <label class="form-password-label" for="password1">Clave: </label>
+	    <input type="password" class="form-password-input" id="password1">
+	  </div>
+	  <div>
+	    <label class="form-password-label" for="password2">Repetir Clave: </label>
+	    <input type="password" class="form-password-input" id="password2">
+	  </div>
+	</form>
+      </div>
+      <div class="modal-footer">
+	<button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+	<button id="changePasswordSubmit" type="submit" class="btn btn-primary">Change Password</button>
+      </div>
+    </div>
+  </div>
 </div>
 
 
-<!-- Delete URL Modal -->
+<!-- Delete User Modal -->
 <div class="modal fade" id="deleteUserModal" tabindex="-1" aria-labelledby="deleteUserModalLabel" aria-hidden="true">
-	<div class="modal-dialog">
- 		<div class="modal-content">
- 			<div class="modal-header">
- 				<h1 class="modal-title fs-5" id="deleteUserModalLabel">Delete User</h1>
- 				<button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-				</div>
- 			<div class="modal-body">
-				<p>¿Borrar el usuario?</p>
-				<p>Se borrarán también las URLS y estadísticas relacionadas.</p>
-			</div>
- 			<div class="modal-footer">
-				<button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
-				<button type="button" class="btn btn-primary">Borrar Usuario</button>
-			</div>
-		</div>
-	</div>
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+ 	<h1 class="modal-title fs-5" id="deleteUserModalLabel">Delete User</h1>
+ 	<button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+	<div class="" id="delete_user_alerts" role="alert"></div>
+	<p>¿Borrar el usuario <span id="UserToDelete" data-user-id=""></span>?</p>
+	<p>Se borrarán también las URLS y estadísticas relacionadas.</p>
+      </div>
+      <div class="modal-footer">
+	<button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+	<button onClick="deleteUser();" type="button" class="btn btn-danger">Borrar Usuario</button>
+      </div>
+    </div>
+  </div>
 </div>
 
 
+<!-- Toast for toggle user admin -->
+
+<div class="toast-container position-fixed bottom-0 end-0 p-3">
+  <div id="liveToast" class="toast" role="alert" aria-live="assertive" aria-atomic="true">
+    <div class="toast-header" id="toggleUserTitle">
+      <strong class="me-auto"></strong>
+      <button type="button" class="btn-close" data-bs-dismiss="toast" aria-label="Close"></button>
+    </div>
+    <div class="toast-body" id="toggleUserBody"></div>
+  </div>
+</div>
 
 
-<script>  
+<script>
+
+  function deleteUser(){
+      userId = $("#UserToDelete").attr("data-user-id");
+      $.ajax({
+          url: '{% url "userdeleteajax" %}',
+          type: 'post',
+          data: {
+	      'id': userId,
+	      'csrfmiddlewaretoken': $('input[name="csrfmiddlewaretoken"]').val()
+	  },
+          success: function(response){
+	      alertMsg = response.success
+	      alertMsg += '<button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>'
+              $('#alerts').html(alertMsg);
+	      $('#alerts').addClass("alert alert-success alert-dismissible fade show");
+	      // TODO: recargar la tabla con URLs
+              $('#deleteUserModal').modal('hide'); 
+          },
+	  error: function(response){
+	      $('#delete_user_alerts').html(response.responseJSON.error);
+	      $('#delete_user_alerts').addClass("alert alert-danger");
+	  }
+      });
+  }
+
+  $(document).on("click", ".deleteUserModalButton", function () {
+      var userId = $(this).data('user-id');
+      var userName = $(this).data('user-username');
+      $("#UserToDelete").html(userName);
+      $("#UserToDelete").attr("data-user-id", userId);
+  });
+
+
+  
+  $(document).on("click", ".changePasswordModalButton", function () {
+      var userId = $(this).data('user-id');
+      $("#UserChangePassword").val(userId);
+  });
+
+
+  
+  $(document).on("click", ".toggleUserAdminButton", function () {
+      var userId = $(this).data('user-id');
+      $("#toggleUserTitle").removeClass()
+      
+      $.ajax({
+          url: '{% url "usertoggleajax" %}',
+          type: 'post',
+          data: {
+	      'id': userId,
+	      'csrfmiddlewaretoken': $('input[name="csrfmiddlewaretoken"]').val()
+	  },
+          success: function(response){
+	      $("#toggleUserTitle").html("User changed")
+	      $("#toggleUserTitle").addClass("toast-header bg-success-subtle text-emphasis-success")
+	      msg = "User changed. Now user "
+	      if (response.userState == "ADMIN") {
+		  msg += "is Admin"
+		  $("#toggleUserAdminButton-"+userId).removeClass()
+		  $("#toggleUserAdminButton-"+userId).addClass("btn btn-outline-primary toggleUserAdminButton")
+		  $("#toggleUserAdminButton-"+userId).html("Quitar admin")
+	      }
+	      if (response.userState == "NOTADMIN") {
+		  msg += "is NOT Admin"
+		  $("#toggleUserAdminButton-"+userId).removeClass()
+		  $("#toggleUserAdminButton-"+userId).addClass("btn btn-outline-primary toggleUserAdminButton")
+		  $("#toggleUserAdminButton-"+userId).html("Hacer admin")
+	      }
+	      $("#toggleUserBody").html(msg)
+	      $("#liveToast").toast("show");
+          },
+	  error: function(response){
+	      $("#toggleUserTitle").html("User NOT changed")
+	      $("#toggleUserTitle").addClass("toast-header bg-danger-subtle text-emphasis-danger")
+	      msg = "User NOT changed. User continues being  "
+	      if (response.responseJSON.userState == "ADMIN") {
+		  msg += "Admin"
+	      }
+	      if (response.responseJSON.userState == "NOTADMIN") {
+		  msg += "NOT Admin"
+	      }
+	      msg += "<br>Error: "+response.responseJSON.error
+	      $("#toggleUserBody").html(msg)
+	      $("#liveToast").toast("show");
+	  }
+      });
+  });
+
+
+
+
+
+  
   $(document).ready(function(){
 
       // Evitamos que se recargue la pagina
       $("#addUserForm").submit(function(e){
             e.preventDefault();
       });
+
+      // Evitamos que se recargue la pagina
+      $("#changeUserPasswordForm").submit(function(e){
+            e.preventDefault();
+      });
+
+
+      // Configuramos el envio por AJAX.
+      // Tener en cuenta que hay que copiar el token CSRF.
+      $('#changePasswordSubmit').click(function(e){
+          $.ajax({
+              url: '{% url "userchangepwajax" %}',
+              type: 'post',
+              data: {
+		  'id': $("#UserChangePassword").val(),
+		  'password1': $("#password1").val(),
+		  'password2': $("#password2").val(),
+		  'csrfmiddlewaretoken': $('input[name="csrfmiddlewaretoken"]').val()
+	      },
+              success: function(response){
+		  alertMsg = response.success
+		  alertMsg += '<button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>'
+                  $('#alerts').html(alertMsg);
+		  $('#alerts').addClass("alert alert-success alert-dismissible fade show");
+		  // TODO: recargar la tabla con URLs
+                  $('#changePasswordUserModal').modal('hide'); 
+              },
+	      error: function(response){
+		  $('#change_password_alerts').html(response.responseJSON.error);
+		  $('#change_password_alerts').addClass("alert alert-danger");
+	      }
+          });
+      });
+
+
+      
+
 
       // Configuramos el envio por AJAX.
       // Tener en cuenta que hay que copiar el token CSRF.
@@ -139,8 +284,10 @@
 		  'csrfmiddlewaretoken': $('input[name="csrfmiddlewaretoken"]').val()
 	      },
               success: function(response){
-                  $('#alerts').html(response.success);
-		  $('#alerts').addClass("alert alert-success");
+		  alertMsg = response.success
+		  alertMsg += '<button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>'
+                  $('#alerts').html(alertMsg);
+		  $('#alerts').addClass("alert alert-success alert-dismissible fade show");
 		  // TODO: recargar la tabla con Users
                   $('#addUserModal').modal('hide'); 
               },
@@ -149,7 +296,7 @@
 		  // TODO: mostrar el campo problematico junto con el error. Ej.: Username: algun error.
 		  for (let anError in response.responseJSON.error) {
 		      for (var i = 0; i < response.responseJSON.error[anError].length; i++) {
-			  msg += "<li>" + response.responseJSON.error[anError][i] + "</li>"
+			  msg += "<li>"+anError+ ": " + response.responseJSON.error[anError][i] + "</li>"
 		      }
 		  }
 		  msg += "</ul>"
@@ -158,6 +305,26 @@
 	      }
           });
       });
+
+
+
+      // Cuando el modal se cierra, se borran los datos, las clases y mensajes.
+      $('#deleteUserModal').on('hidden.bs.modal', function () {
+	  $("#UserToDelete").html("");
+	  $('#delete_user_alerts').html('');
+	  $('#delete_user_alerts').removeClass();
+      });      
+
+
+      // Cuando el modal se cierra, se borran los datos, las clases y mensajes.
+      $('#changePasswordUserModal').on('hidden.bs.modal', function () {
+	  $("#UserChangePassword").val("");
+	  $("#password1").val("");
+	  $("#password2").val("");
+	  $('#change_password_alerts').html('');
+	  $('#change_password_alerts').removeClass();
+      });      
+
 
       // Cuando el modal se cierra, se borran los datos, las clases y mensajes.
       $('#addUserModal').on('hidden.bs.modal', function () {

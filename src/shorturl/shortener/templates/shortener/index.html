@@ -32,11 +32,11 @@
     {% for aURL in urls %}
     <tr>
       <td><a href="#" target="_blank">{{ aURL.original }}</a></td>
-      <td><a href="#" target="_blank">{{ aURL.shortened }}</a></td>
+      <td><a id="shortURL-{{ aURL.id }}" href="{% url 'redirectto' aURL.shortened %}" target="_blank">{{ aURL.shortened }}</a></td>
       <td>
-	<button type="button" class="btn btn-outline-primary">Copiar URL</button>
-	<button type="button" class="btn btn-outline-info" data-bs-toggle="modal" data-bs-target="#statsURLModal">Estadísticas</button>  
-	<button type="button" class="btn btn-outline-danger" data-bs-toggle="modal" data-bs-target="#deleteURLModal">Borrar</button>  
+	<button onClick="copyURL('{{ aURL.id}}');" type="button" class="btn btn-outline-primary">Copiar URL</button>
+	<button data-id="{{ aURL.id}}" data-txt="{{ aURL.original }}" type="button" class="btn btn-outline-info showURLStatsButton" data-bs-toggle="modal" data-bs-target="#statsURLModal">Estadísticas</button>  
+	<button data-id="{{ aURL.id }}" data-txt="{{ aURL.original}}" type="button" class="btn btn-outline-danger deleteURLModalButton" data-bs-toggle="modal" data-bs-target="#deleteURLModal">Borrar</button>  
       </td>
     </tr>
     {% endfor %}
@@ -53,75 +53,159 @@
 {% block modals %}
 <!-- Add URL Modal -->
 <div class="modal fade" id="addURLModal" tabindex="-1" aria-labelledby="addURLModalLabel" aria-hidden="true">
-	<div class="modal-dialog">
- 		<div class="modal-content">
- 			<div class="modal-header">
- 				<h1 class="modal-title fs-5" id="addURLModalLabel">Add URL</h1>
- 				<button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-			</div>
- 			<div class="modal-body">
-			  <div class="" id="add_url_alerts" role="alert"></div>
-			  <form id="addURLForm" method="post" action="{% url 'urladdajax' %}">
-			    {% csrf_token %}
-			    {{ add_url_form }}
-			    <button id="addURLSubmit" type="submit" class="btn btn-primary">Add URL</button>
-			  </form>
-			</div>
- 			<div class="modal-footer">
-				<button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-				<!-- <button type="button" class="btn btn-primary">Save URL</button> -->
-			</div>
-		</div>
-	</div>
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+ 	<h1 class="modal-title fs-5" id="addURLModalLabel">Add URL</h1>
+ 	<button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+	<div class="" id="add_url_alerts" role="alert"></div>
+	<form id="addURLForm" method="post" action="{% url 'urladdajax' %}">
+	  {% csrf_token %}
+	  {{ add_url_form }}
+	  <button id="addURLSubmit" type="submit" class="btn btn-primary">Add URL</button>
+	</form>
+      </div>
+      <div class="modal-footer">
+	<button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+	<!-- <button type="button" class="btn btn-primary">Save URL</button> -->
+      </div>
+    </div>
+  </div>
 </div>
 
 <!-- Stats Modal -->
 <div class="modal fade" id="statsURLModal" tabindex="-1" aria-labelledby="statsURLModalLabel" aria-hidden="true">
-	<div class="modal-dialog">
- 		<div class="modal-content">
- 			<div class="modal-header">
- 				<h1 class="modal-title fs-5" id="StatsURLModalLabel">Statistics</h1>
- 				<button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-				</div>
- 			<div class="modal-body">
-			  <div class="" id="stats_url_alerts" role="alert"></div>
-			  <ul>
-			    <li><b>Date added:</b> 12/2/23</li>
-			    <li><b>Times clicked:</b> 344</li>
-			  </ul>
-			</div>
- 			<div class="modal-footer">
-				<button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-			</div>
-		</div>
-	</div>
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+ 	<h1 class="modal-title fs-5" id="StatsURLModalLabel">Statistics</h1>
+ 	<button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+	<div class="" id="stats_url_alerts" role="alert"></div>
+	<div>Showing stats for <span id="URLStatsTxt"></span></div>
+	<ul>
+	  <li><b>Date added:</b>    <span id="URLStatsDateAdded"></span></li>
+	  <li><b>Times visited:</b> <span id="URLStatsTimesVisited"></span></li>
+	</ul>
+      </div>
+      <div class="modal-footer">
+	<button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+      </div>
+    </div>
+  </div>
 </div>
 
 <!-- Delete URL Modal -->
 <div class="modal fade" id="deleteURLModal" tabindex="-1" aria-labelledby="deleteURLModalLabel" aria-hidden="true">
-	<div class="modal-dialog">
- 		<div class="modal-content">
- 			<div class="modal-header">
- 				<h1 class="modal-title fs-5" id="deleteURLModalLabel">Delete URL</h1>
- 				<button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-				</div>
- 			<div class="modal-body">
-			  <div class="" id="delete_url_alerts" role="alert"></div>
-			  <p>¿Borrar la URL?</p>
-			  <p>Se borrarán también las estadísticas relacionadas.</p>
-			</div>
- 			<div class="modal-footer">
-				<button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
-				<button type="button" class="btn btn-primary">Borrar URL</button>
-			</div>
-		</div>
-	</div>
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+ 	<h1 class="modal-title fs-5" id="deleteURLModalLabel">Delete URL</h1>
+ 	<button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+	<div class="" id="delete_url_alerts" role="alert"></div>
+	<p>¿Borrar la URL <span id="URLToDelete" data-urlid=""></span>?</p>
+	<p>Se borrarán también las estadísticas relacionadas.</p>
+      </div>
+      <div class="modal-footer">
+	<button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+	<button onClick="deleteURL();" type="button" class="btn btn-danger">Borrar URL</button>
+      </div>
+    </div>
+  </div>
 </div>
 
 
-<script>  
-  $(document).ready(function(){
+<!-- Toast for copied URL -->
 
+<div class="toast-container position-fixed bottom-0 end-0 p-3">
+  <div id="liveToast" class="toast" role="alert" aria-live="assertive" aria-atomic="true">
+    <div class="toast-header bg-success-subtle text-emphasis-success">
+      <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-clipboard" viewBox="0 0 16 16">
+	<path d="M4 1.5H3a2 2 0 0 0-2 2V14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V3.5a2 2 0 0 0-2-2h-1v1h1a1 1 0 0 1 1 1V14a1 1 0 0 1-1 1H3a1 1 0 0 1-1-1V3.5a1 1 0 0 1 1-1h1v-1z"/>
+	<path d="M9.5 1a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-.5.5h-3a.5.5 0 0 1-.5-.5v-1a.5.5 0 0 1 .5-.5h3zm-3-1A1.5 1.5 0 0 0 5 1.5v1A1.5 1.5 0 0 0 6.5 4h3A1.5 1.5 0 0 0 11 2.5v-1A1.5 1.5 0 0 0 9.5 0h-3z"/>
+      </svg>
+      <strong class="me-auto"> URL Copied</strong>
+      <button type="button" class="btn-close" data-bs-dismiss="toast" aria-label="Close"></button>
+    </div>
+    <div class="toast-body">
+      URL Copied to clipboard.
+    </div>
+  </div>
+</div>
+
+
+<script>
+
+  function copyURL(anId){
+      // anId is a string representing the URL id
+      var copyText = $("#shortURL-"+anId).text()
+      navigator.clipboard.writeText(copyText);
+      $("#liveToast").toast("show");
+  }
+
+  function deleteURL(){
+      urlId = $("#URLToDelete").attr("data-urlid");
+      $.ajax({
+          url: '{% url "urldeleteajax" %}',
+          type: 'post',
+          data: {
+	      'id': urlId,
+	      'csrfmiddlewaretoken': $('input[name="csrfmiddlewaretoken"]').val()
+	  },
+          success: function(response){
+	      alertMsg = response.success
+	      alertMsg += '<button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>'
+              $('#alerts').html(alertMsg);
+	      $('#alerts').addClass("alert alert-success alert-dismissible fade show");
+	      // TODO: recargar la tabla con URLs
+              $('#deleteURLModal').modal('hide'); 
+          },
+	  error: function(response){
+	      $('#delete_url_alerts').html(response.responseJSON.error);
+	      $('#delete_url_alerts').addClass("alert alert-danger");
+	  }
+      });
+  }
+
+  $(document).on("click", ".deleteURLModalButton", function () {
+      var urlId = $(this).data('id');
+      var urlTxt = $(this).data('txt');
+      $("#URLToDelete").html(urlTxt);
+      $("#URLToDelete").attr("data-urlid", urlId);
+  });
+
+
+  $(document).on("click", ".showURLStatsButton", function () {
+      var urlId = $(this).data('id');
+      var urlTxt = $(this).data('txt');
+      $.ajax({
+          url: '{% url "urlstatsajax" %}',
+          type: 'post',
+          data: {
+	      'id': urlId,
+	      'csrfmiddlewaretoken': $('input[name="csrfmiddlewaretoken"]').val()
+	  },
+          success: function(response){
+	      var urlAdded = response.dateAdded;
+	      var urlTimesVisited = response.timesVisited;
+	      $("#URLStatsTxt").html(urlTxt);
+	      $("#URLStatsDateAdded").html(urlAdded);
+	      $("#URLStatsTimesVisited").html(urlTimesVisited);
+          },
+	  error: function(response){
+	      $('#stats_url_alerts').html(response.responseJSON.error);
+	      $('#stats_url_alerts').addClass("alert alert-danger");
+	  }
+      });
+  });
+
+  $(document).ready(function(){
+      
       // Evitamos que se recargue la pagina
       $("#addURLForm").submit(function(e){
             e.preventDefault();
@@ -138,8 +222,10 @@
 		  'csrfmiddlewaretoken': $('input[name="csrfmiddlewaretoken"]').val()
 	      },
               success: function(response){
-                  $('#alerts').html(response.success);
-		  $('#alerts').addClass("alert alert-success");
+		  alertMsg = response.success
+		  alertMsg += '<button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>'
+                  $('#alerts').html(alertMsg);
+		  $('#alerts').addClass("alert alert-success alert-dismissible fade show");
 		  // TODO: recargar la tabla con URLs
                   $('#addURLModal').modal('hide'); 
               },
@@ -156,6 +242,23 @@
 	  $('#add_url_alerts').html('');
 	  $('#add_url_alerts').removeClass();
       });
+
+      // Cuando el modal se cierra, se borran los datos, las clases y mensajes.
+      $('#deleteURLModal').on('hidden.bs.modal', function () {
+	  $("#URLToDelete").attr("data-urlid", "");
+	  $("#URLToDelete").html("");
+	  $('#delete_url_alerts').html('');
+	  $('#delete_url_alerts').removeClass();
+      });
+
+      // Cuando el modal se cierra, se borran los datos, las clases y mensajes.
+      $('#statsURLModal').on('hidden.bs.modal', function () {
+	  $("#URLStatsTxt").html("");
+	  $("#URLStatsDateAdded").html("");
+	  $("#URLStatsTimesVisited").html("");
+	  $('#stats_url_alerts').html('');
+	  $('#stats_url_alerts').removeClass();
+      });      
       
   });  
 </script>

@@ -30,4 +30,17 @@ class Access(models.Model):
     ip           = models.GenericIPAddressField()
     shortenedURL = models.ForeignKey(ShortenedURL, on_delete=models.CASCADE)
 
+    @classmethod
+    def create(cls, navigator, ip, shortenedURL):
+
+        from datetime import datetime
+
+        currentDateAndTime = datetime.now()
+        currentDate = currentDateAndTime.strftime("%Y-%m-%d")
+        currentTime = currentDateAndTime.strftime("%H:%M:%S")
+
+        anAccess = cls(navigator=navigator, ip=ip, shortenedURL=shortenedURL)
+        anAccess.dateAccesed = currentDate
+        anAccess.hourAccessed = currentTime
+        return anAccess
 

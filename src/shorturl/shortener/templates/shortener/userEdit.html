@@ -6,9 +6,13 @@
 
 {% block content %}
 
+
 {{ user.username }} ({{ user.email }})
 
+<form method="post" action="{% url 'useredit' %}">
+{% csrf_token %}
 {{ form.as_div }}
-
+<button type="submit" class="btn btn-primary">Save User</button>
+</form>
 
 {% endblock %}
