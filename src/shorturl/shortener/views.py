@@ -1,4 +1,5 @@
 from django.shortcuts import render, redirect, get_object_or_404
+from django.core.paginator import Paginator
 from django.http import HttpResponse, HttpResponseRedirect, JsonResponse
 from django.contrib.auth.decorators import login_required, user_passes_test
 from .models import ShortenedURL, URLUser, Access
@@ -35,6 +36,50 @@ def index(request):
 
     add_url_form = ShortenedURLForm()
     return render(request, "shortener/index.html", {'urls': urls, 'add_url_form': add_url_form})
+
+
+@login_required
+def urlLoadAjax(request):
+    count = 5
+    is_ajax = request.headers.get('X-Requested-With') == 'XMLHttpRequest'
+    
+    if is_ajax and request.method == "POST":
+        pageNum = request.POST["pageNum"]
+        nextPage = -1
+        prevPage = 1
+        lastPage = -1
+        currentPage = 1
+        urls = []
+
+        currentUser = URLUser.objects.get(pk=request.user.id)
+        myUrls = currentUser.shortenedurl_set.all()
+        paginator = Paginator(myUrls, count)
+        page = paginator.get_page(pageNum)
+
+        if page.has_previous():
+            prevPage = page.previous_page_number()
+        if page.has_next():
+            nextPage = page.next_page_number()
+        lastPage = paginator.num_pages
+        currentPage = page.number
+        
+        for aURL in page.object_list:
+            urls.append({
+                'id': aURL.id,
+                'original': aURL.original,
+                'shortened': aURL.shortened,})
+            
+        resp = {
+            'next': nextPage,
+            'prev': prevPage,
+            'last': lastPage,
+            'current': currentPage,
+            'data': urls,
+        }
+        
+        #return JsonResponse({"error": "adasdads"}, status=400)
+        return JsonResponse(resp, status=200)
+    return JsonResponse({"error": "Request should be Ajax POST."}, status=400)
 
 
 @login_required
