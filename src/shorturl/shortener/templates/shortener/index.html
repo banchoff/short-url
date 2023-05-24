@@ -277,10 +277,12 @@
 	      'csrfmiddlewaretoken': $('input[name="csrfmiddlewaretoken"]').val()
 	  },
           success: function(response){
-	      alertMsg = response.success
-	      alertMsg += '<button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>'
-              $('#alerts').html(alertMsg);
-	      $('#alerts').addClass("alert alert-success alert-dismissible fade show");
+	      alertMsg = '<div class="alert alert-success alert-dismissible fade show" role="alert">'
+	      alertMsg += response.success
+	      alertMsg += '<button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button></div>'
+	      $('#alertsContainer').html(alertMsg)
+              //$('#alerts').html(alertMsg);
+	      //$('#alerts').addClass("alert alert-success alert-dismissible fade show");
 	      myTable.updateTable();
               $('#deleteURLModal').modal('hide'); 
           },
@@ -355,10 +357,17 @@
 		  'csrfmiddlewaretoken': $('input[name="csrfmiddlewaretoken"]').val()
 	      },
               success: function(response){
-		  alertMsg = response.success
+		  alertMsg = '<div class="alert alert-success alert-dismissible fade show" role="alert">'
+		  alertMsg += response.success
+		  alertMsg += '<button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button></div>'
+		  $('#alertsContainer').html(alertMsg)
+
+
+		  /*alertMsg = response.success
 		  alertMsg += '<button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>'
                   $('#alerts').html(alertMsg);
 		  $('#alerts').addClass("alert alert-success alert-dismissible fade show");
+		  */
 		  myTable.updateTable();
                   $('#addURLModal').modal('hide'); 
               },

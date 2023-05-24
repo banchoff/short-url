@@ -10,6 +10,7 @@ urlpatterns = [
     path("user/changepw/ajax", views.userChangePWAjax, name="userchangepwajax"),
     path("url/add/ajax", views.urlAddAjax, name="urladdajax"),
     path("url/load/ajax", views.urlLoadAjax, name="loadurlsajax"),
+    path("user/load/ajax", views.userLoadAjax, name="loadusersajax"),
     path("url/stats/ajax", views.urlStatsAjax, name="urlstatsajax"),
     path("url/delete/ajax", views.urlDeleteAjax, name="urldeleteajax"),
     path("user/add/ajax", views.userAddAjax, name="useraddajax"),

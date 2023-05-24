@@ -38,6 +38,58 @@ def index(request):
     return render(request, "shortener/index.html", {'urls': urls, 'add_url_form': add_url_form})
 
 
+
+
+@login_required
+@user_passes_test(lambda u: u.is_superuser, redirect_field_name=None, login_url=reverse_lazy("index"))
+def userLoadAjax(request):
+    count = 5
+    is_ajax = request.headers.get('X-Requested-With') == 'XMLHttpRequest'
+    
+    if is_ajax and request.method == "POST":
+        pageNum = request.POST["pageNum"]
+        nextPage = -1
+        prevPage = 1
+        lastPage = -1
+        currentPage = 1
+        usersArray = []
+
+        users = URLUser.objects.all()
+        paginator = Paginator(users, count)
+        page = paginator.get_page(pageNum)
+
+        if page.has_previous():
+            prevPage = page.previous_page_number()
+        if page.has_next():
+            nextPage = page.next_page_number()
+        lastPage = paginator.num_pages
+        currentPage = page.number
+        
+        for aUser in page.object_list:
+            usersArray.append({
+                'id': aUser.id,
+                'first_name': aUser.first_name,
+                'last_name': aUser.last_name,
+                'username': aUser.username,
+                'id': aUser.id,
+                'is_superuser': aUser.is_superuser,
+                'email': aUser.email,})
+            
+        resp = {
+            'next': nextPage,
+            'prev': prevPage,
+            'last': lastPage,
+            'current': currentPage,
+            'data': usersArray,
+        }
+        
+        #return JsonResponse({"error": "adasdads"}, status=400)
+        return JsonResponse(resp, status=200)
+    return JsonResponse({"error": "Request should be Ajax POST."}, status=400)
+
+
+
+
 @login_required
 def urlLoadAjax(request):
     count = 5
