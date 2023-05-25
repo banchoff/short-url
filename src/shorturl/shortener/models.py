@@ -7,17 +7,9 @@ from django.db import models
 class URLUser(AbstractUser):
     def __str__(self):
         return self.username
-
-# class URLUser(models.Model):
-#     firstname = models.CharField(max_length=100)
-#     lastname  = models.CharField(max_length=100)
-#     username  = models.CharField(max_length=50)
-#     email     = models.EmailField()
-#     # password = models.CharField(max_length=200)
-
     
 class ShortenedURL(models.Model):
-    original    = models.URLField()
+    original    = models.URLField(unique=True)
     shortened   = models.URLField()
     dateCreated = models.DateField()
     hourCreated = models.TimeField()
