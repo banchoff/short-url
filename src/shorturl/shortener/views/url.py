@@ -118,32 +118,3 @@ def urlDeleteAjax(request):
         else:
             return JsonResponse({"error": "User does not own this URL."}, status=400)
     return JsonResponse({"error": "Request should be Ajax POST."}, status=400)
-
-@login_required
-def urlAdd(request):
-    def getUniqueShorterURL(longUrl):
-        urlHashed = hashlib.md5(longUrl.encode())
-        return urlHashed.hexdigest()
-    # TODO: Esto esta de mas, no?
-    form = ShortenedURLForm()
-    # url = SortenedURL.objects.get(pk=urlId)
-    #form = ShortenedURLForm(instance = url)
-    if request.method == 'POST':
-        form = ShortenedURLForm(request.POST)
-        if form.is_valid():
-            currentDateAndTime = datetime.now()
-            currentDate = currentDateAndTime.strftime("%Y-%m-%d")
-            currentTime = currentDateAndTime.strftime("%H:%M:%S")
-            
-            myUrl = form.save(commit=False)
-            myUrl.shortened = getUniqueShorterURL(myUrl.original)
-            myUrl.dateCreated = currentDate
-            myUrl.hourCreated = currentTime
-            myUrl.urlUser = request.user
-            
-            myUrl.save()
-            return HttpResponseRedirect('/shortener/')
-    else:
-        form = ShortenedURLForm()
-    return render(request, "shortener/urlAdd.html", {'form': form})
-

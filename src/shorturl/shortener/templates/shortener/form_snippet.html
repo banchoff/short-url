@@ -1,8 +1,0 @@
-{% for field in form %}
-<div>
-  {{ field.errors }}
-  <label class="form-url-label" for="urlToAdd">{{field.label_tag}}: </label>
-  {{ field }}
-  <input type="url" class="form-url-input" id="urlToAdd">
-</div>
-{% endfor %}

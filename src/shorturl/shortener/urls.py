@@ -15,13 +15,10 @@ urlpatterns = [
     path("url/load/ajax", url.urlLoadAjax, name="loadurlsajax"),
     path("url/stats/ajax", url.urlStatsAjax, name="urlstatsajax"),
     path("url/delete/ajax", url.urlDeleteAjax, name="urldeleteajax"),
-    path("url/add", url.urlAdd, name="urladd"),
 
     path("user/edit", user.userEdit, name="useredit"),
     path("user/add/ajax", user.userAddAjax, name="useraddajax"),
     path("user/load/ajax", user.userLoadAjax, name="loadusersajax"),
-    path("user/login", user.userLogin, name="userlogin"),
-    path("user/logout", user.userLogout, name="userlogout"),
     path("user/list", user.userList, name="userlist"),
     path("user/toggle/ajax", user.userToggleAjax, name="usertoggleajax"),
     path("user/delete/ajax", user.userDeleteAjax, name="userdeleteajax"),

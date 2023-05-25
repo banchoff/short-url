@@ -133,16 +133,6 @@ def userList(request):
     return render(request, "shortener/userList.html", {'users': users, 'add_user_form': add_user_form})
 
 
-def userLogin(request):
-    return render(request, "shortener/userLogin.html")
-
-
-@login_required
-def userLogout(request):
-    return render(request, "shortener/userLogout.html")
-
-
-
 @login_required
 @user_passes_test(lambda u: u.is_superuser, redirect_field_name=None, login_url=reverse_lazy("index"))
 def userToggleAjax(request):
