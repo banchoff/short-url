@@ -13,19 +13,40 @@
 <body>
   <div class="container-fluid">
     {% block header%}
-
     <header class="d-flex flex-wrap justify-content-end py-3 mb-4 border-bottom" style=" background-image: url('{% static 'bg_header.jpg' %}');">
       <ul class="nav nav-pills">
+	{% url 'index'    as index_url     %}
+	{% url 'userlist' as user_list_url %}
+	{% url 'useredit' as user_edit_url %}
+	{% url 'help'     as help_url      %}
+	{% url 'about'    as about_url     %}
 	<li class="nav-item">
-	  <a href="{% url 'index' %}" class="nav-link {% if request.path == '/shortener/' %} active {% endif %}" aria-current="page">Home</a>
+	  <a href="{% url 'index' %}"
+	     class="nav-link {% if request.path == index_url %} active {% endif %}"
+	     aria-current="page">URLs</a>
+	</li>
+	{% if user.is_superuser %}
+	<li class="nav-item">
+	  <a href="{% url 'userlist' %}"
+	     class="nav-link {% if request.path == user_list_url %} active {% endif %}"
+	     aria-current="page">Users</a>
+	</li>
+	{% endif %}
+	<li class="nav-item">
+	  <a href="{% url 'useredit' %}"
+	     class="nav-link {% if request.path == user_edit_url %} active {% endif %}">Profile</a>
+	</li>
+
+	<li class="nav-item">
+	  <a href="{% url 'help' %}"
+	     class="nav-link {% if request.path == help_url %} active {% endif %}">Ayuda</a>
 	</li>
 	<li class="nav-item">
-	  <a href="{% url 'help' %}" class="nav-link {% if request.path == '/shortener/help' %} active {% endif %}">Ayuda</a>
+	  <a href="{% url 'about' %}" class="nav-link {% if request.path == about_url %} active {% endif %}">About</a>
 	</li>
 	<li class="nav-item">
-	  <a href="{% url 'about' %}" class="nav-link {% if request.path == '/shortener/about' %} active {% endif %}">About</a>
-	</li>
-	<li class="nav-item"><a href="{% url 'logout' %}" class="nav-link">Log out</a></li>
+	  <a href="{% url 'logout' %}"
+	     class="nav-link">Log out</a></li>
       </ul>
     </header>
     {% endblock%}
