@@ -27,20 +27,16 @@ def objectLoadAjax(request, objects, funcAssign):
         lastPage = -1
         currentPage = 1
         resultsArray = []
-
         paginator = Paginator(objects, count)
         page = paginator.get_page(pageNum)
-
         if page.has_previous():
             prevPage = page.previous_page_number()
         if page.has_next():
             nextPage = page.next_page_number()
         lastPage = paginator.num_pages
         currentPage = page.number
-        
         for anObject in page.object_list:
-            resultsArray.append(funcAssign(anObject))
-            
+            resultsArray.append(funcAssign(anObject))            
         resp = {
             'next': nextPage,
             'prev': prevPage,
@@ -50,11 +46,6 @@ def objectLoadAjax(request, objects, funcAssign):
         }
         return JsonResponse(resp, status=200)
     return JsonResponse({"error": "Request should be Ajax POST."}, status=400)
-
-
-
-
-
 
 # Public Views
 

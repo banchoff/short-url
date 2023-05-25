@@ -7,11 +7,9 @@ from django.urls import reverse_lazy
 from ..forms import URLUserCreationForm, URLUserChangeForm
 from .common import isAjaxAndPost, objectLoadAjax
 
-
 @login_required
 @user_passes_test(lambda u: u.is_superuser, redirect_field_name=None, login_url=reverse_lazy("index"))
-def userLoadAjax(request):
-    
+def userLoadAjax(request):    
     def funcAssign(aDict):
         return {
             'id': aDict.id,
@@ -37,15 +35,7 @@ def userEdit(request):
         currentUser.last_name = last_name
         currentUser.save()
         return HttpResponseRedirect('/shortener/')
-    
-        # TODO: Esto no usa el id del usuario, se pierde en el request, por lo que termina creando un registro nuevo en vez de actualizar el actual.
-        # form = URLUserChangeForm(request.POST) # Passes POST data to the form
-        # if form.is_valid():
-            
-        #     form.save()
-        #     return HttpResponseRedirect('/shortener/')
     return render(request, "shortener/userEdit.html", {'form': form})
-
 
 @login_required
 @user_passes_test(lambda u: u.is_superuser, redirect_field_name=None, login_url=reverse_lazy("index"))
@@ -60,8 +50,6 @@ def userDeleteAjax(request):
             return JsonResponse({"error": "User cannot delete herself."}, status=400)
     return JsonResponse({"error": "Request should be Ajax POST."}, status=400)
 
-
-
 @login_required
 def userChangePWAjax(request):
     if isAjaxAndPost(request):
@@ -71,33 +59,29 @@ def userChangePWAjax(request):
             return JsonResponse({"error": "Passwords do not match."}, status=400)
         userId = request.POST["id"]
         if request.user.id == userId:
-            # Cambia su password. OK
+            # Changes own password. OK
             aUser = URLUser.objects.get(pk=userId)
             aUser.set_password(password1)
             aUser.save()
             return JsonResponse({"success": "Password changed."}, status=200)
         else:
             if request.user.is_superuser:
-                # Es admin, puede cambiar cualquier password. OK
+                # Admin can change any password. OK
                 aUser = URLUser.objects.get(pk=userId)
                 aUser.set_password(password1)
                 aUser.save()
                 return JsonResponse({"success": "Password changed."}, status=200)
             else:
-                # Quiere cambiar la password de otro usuario pero no es admin. ERROR
+                # Nonadmin users cannot change other user's password. ERROR
                 return JsonResponse({"error": "User has no permission."}, status=400)
-                pass
     return JsonResponse({"error": "Request should be Ajax POST."}, status=400)
-
 
 @login_required
 @user_passes_test(lambda u: u.is_superuser, redirect_field_name=None, login_url=reverse_lazy("index"))
 def userList(request):
     users = URLUser.objects.all()
     add_user_form = URLUserCreationForm()
-
     return render(request, "shortener/userList.html", {'users': users, 'add_user_form': add_user_form})
-
 
 @login_required
 @user_passes_test(lambda u: u.is_superuser, redirect_field_name=None, login_url=reverse_lazy("index"))
@@ -105,26 +89,20 @@ def userToggleAjax(request):
     if isAjaxAndPost(request):
         userId = request.POST["id"]
         aUser = get_object_or_404(URLUser, pk=userId)
-
         userState = "NOTADMIN"
         if aUser.is_superuser:
             userState = "ADMIN"
-
         if aUser.id == request.user.id:
             return JsonResponse({'userState': userState, 'error': 'Cannot change your own user.'}, status=400)
-
         # Toggle user role
         aUser.is_superuser = not aUser.is_superuser
         userState = "NOTADMIN"
         if aUser.is_superuser:
             userState = "ADMIN"
-
         aUser.save()
         return JsonResponse({'userState': userState}, status=200)
     else:
         return JsonResponse({"error": "Request should be Ajax POST."}, status=400)
-
-
 
 @login_required
 @user_passes_test(lambda u: u.is_superuser, redirect_field_name=None, login_url=reverse_lazy("index"))
