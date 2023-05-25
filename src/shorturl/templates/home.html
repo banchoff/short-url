@@ -1,20 +1,15 @@
 {% extends "base.html" %}
-
 {% block title %}URL Shortener{% endblock %}
-
 {% block header %}{% endblock %}
-
 {% block titleH1 %}{% endblock %}
 
 {% block content %}
 
 {% if user.is_authenticated %}
 
-<div style="margin-top: 1em;">
-
-  {% block userinfo %} Usuario: {{ user.username }} {% endblock %}
-
-</div>
+<script>
+window.location.href = "{% url 'index' %}";
+</script>
 
 {% else %}
 
@@ -30,4 +25,5 @@
   </div>
 </div>
 {% endif %}
+
 {% endblock %}

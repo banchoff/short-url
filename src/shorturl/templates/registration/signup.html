@@ -1,12 +1,25 @@
 {% extends "base.html" %}
 
-{% block title %}Sign Up{% endblock %}
+{% block title %}URL Shortener - Log In{% endblock %}
+
+{% block header %}{% endblock %}
+
+{% block titleH1 %}{% endblock %}
 
 {% block content %}
-<h2>Sign Up</h2>
-<form method="post">
-  {% csrf_token %}
-  {{ form.as_div }}
-  <button type="submit">Sign Up</button>
-</form>
+
+<div style="margin-top: 1em;">
+  <div class="p-5 mb-4 bg-body-tertiary rounded-3">
+    <div class="container-fluid py-5">
+      <h1 class="display-5 fw-bold">URL Shortener - Sign up</h1>
+      <form method="post">
+	{% csrf_token %}
+	{{ form.as_p }}
+	<button type="submit" class="btn btn-primary btn-lg">Sign up</button>  
+      </form>
+    </div>
+  </div>
+</div>
+
 {% endblock %}
+
