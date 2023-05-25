@@ -5,52 +5,24 @@ from django.contrib.auth.decorators import login_required, user_passes_test
 from ..models import URLUser
 from django.urls import reverse_lazy
 from ..forms import URLUserCreationForm, URLUserChangeForm
+from .common import isAjaxAndPost, objectLoadAjax
 
 
 @login_required
 @user_passes_test(lambda u: u.is_superuser, redirect_field_name=None, login_url=reverse_lazy("index"))
 def userLoadAjax(request):
-    count = 5
-    is_ajax = request.headers.get('X-Requested-With') == 'XMLHttpRequest'
     
-    if is_ajax and request.method == "POST":
-        pageNum = request.POST["pageNum"]
-        nextPage = -1
-        prevPage = 1
-        lastPage = -1
-        currentPage = 1
-        usersArray = []
-
-        users = URLUser.objects.all()
-        paginator = Paginator(users, count)
-        page = paginator.get_page(pageNum)
-
-        if page.has_previous():
-            prevPage = page.previous_page_number()
-        if page.has_next():
-            nextPage = page.next_page_number()
-        lastPage = paginator.num_pages
-        currentPage = page.number
-        
-        for aUser in page.object_list:
-            usersArray.append({
-                'id': aUser.id,
-                'first_name': aUser.first_name,
-                'last_name': aUser.last_name,
-                'username': aUser.username,
-                'id': aUser.id,
-                'is_superuser': aUser.is_superuser,
-                'email': aUser.email,})
-            
-        resp = {
-            'next': nextPage,
-            'prev': prevPage,
-            'last': lastPage,
-            'current': currentPage,
-            'data': usersArray,
+    def funcAssign(aDict):
+        return {
+            'id': aDict.id,
+            'first_name': aDict.first_name,
+            'last_name': aDict.last_name,
+            'username': aDict.username,
+            'id': aDict.id,
+            'is_superuser': aDict.is_superuser,
+            'email': aDict.email,
         }
-        return JsonResponse(resp, status=200)
-    return JsonResponse({"error": "Request should be Ajax POST."}, status=400)
+    return objectLoadAjax(request, URLUser.objects.all(), funcAssign)
 
 @login_required
 def userEdit(request):
@@ -78,10 +50,7 @@ def userEdit(request):
 @login_required
 @user_passes_test(lambda u: u.is_superuser, redirect_field_name=None, login_url=reverse_lazy("index"))
 def userDeleteAjax(request):
-
-    is_ajax = request.headers.get('X-Requested-With') == 'XMLHttpRequest'
-    
-    if is_ajax and request.method == "POST":
+    if isAjaxAndPost(request):
         userId = request.POST["id"]
         aUser = get_object_or_404(URLUser, pk=userId)
         if aUser.id != request.user.id:
@@ -95,10 +64,7 @@ def userDeleteAjax(request):
 
 @login_required
 def userChangePWAjax(request):
-
-    is_ajax = request.headers.get('X-Requested-With') == 'XMLHttpRequest'
-
-    if is_ajax and request.method == "POST":
+    if isAjaxAndPost(request):
         password1 = request.POST["password1"]
         password2 = request.POST["password2"]
         if password1 != password2:
@@ -136,10 +102,7 @@ def userList(request):
 @login_required
 @user_passes_test(lambda u: u.is_superuser, redirect_field_name=None, login_url=reverse_lazy("index"))
 def userToggleAjax(request):
-
-    is_ajax = request.headers.get('X-Requested-With') == 'XMLHttpRequest'
-    
-    if is_ajax and request.method == "POST":
+    if isAjaxAndPost(request):
         userId = request.POST["id"]
         aUser = get_object_or_404(URLUser, pk=userId)
 
@@ -166,10 +129,7 @@ def userToggleAjax(request):
 @login_required
 @user_passes_test(lambda u: u.is_superuser, redirect_field_name=None, login_url=reverse_lazy("index"))
 def userAddAjax(request):
-
-    is_ajax = request.headers.get('X-Requested-With') == 'XMLHttpRequest'
-    
-    if is_ajax and request.method == "POST":
+    if isAjaxAndPost(request):
         form = URLUserCreationForm(request.POST)
         if form.is_valid():
             form.save()

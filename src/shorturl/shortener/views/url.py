@@ -6,9 +6,9 @@ from ..models import ShortenedURL, URLUser
 from ..forms import ShortenedURLForm
 from datetime import datetime
 import hashlib
+from .common import isAjaxAndPost, objectLoadAjax
 
-
-
+    
 @login_required
 def index(request):
     currentUser = URLUser.objects.get(pk=request.user.id)
@@ -16,47 +16,18 @@ def index(request):
     add_url_form = ShortenedURLForm()
     return render(request, "shortener/index.html", {'urls': urls, 'add_url_form': add_url_form})
 
-
 @login_required
 def urlLoadAjax(request):
-    count = 5
-    is_ajax = request.headers.get('X-Requested-With') == 'XMLHttpRequest'
     
-    if is_ajax and request.method == "POST":
-        pageNum = request.POST["pageNum"]
-        nextPage = -1
-        prevPage = 1
-        lastPage = -1
-        currentPage = 1
-        urls = []
-
-        currentUser = URLUser.objects.get(pk=request.user.id)
-        myUrls = currentUser.shortenedurl_set.all()
-        paginator = Paginator(myUrls, count)
-        page = paginator.get_page(pageNum)
-
-        if page.has_previous():
-            prevPage = page.previous_page_number()
-        if page.has_next():
-            nextPage = page.next_page_number()
-        lastPage = paginator.num_pages
-        currentPage = page.number
-        
-        for aURL in page.object_list:
-            urls.append({
-                'id': aURL.id,
-                'original': aURL.original,
-                'shortened': aURL.shortened,})
-            
-        resp = {
-            'next': nextPage,
-            'prev': prevPage,
-            'last': lastPage,
-            'current': currentPage,
-            'data': urls,
+    def funcAssign(aDict):
+        return {
+                'id': aDict.id,
+                'original': aDict.original,
+                'shortened': aDict.shortened,
         }
-        return JsonResponse(resp, status=200)
-    return JsonResponse({"error": "Request should be Ajax POST."}, status=400)
+    
+    currentUser = URLUser.objects.get(pk=request.user.id)
+    return objectLoadAjax(request, currentUser.shortenedurl_set.all(), funcAssign)
 
 @login_required
 def urlAddAjax(request):
@@ -65,9 +36,7 @@ def urlAddAjax(request):
         urlHashed = hashlib.md5(longUrl.encode())
         return urlHashed.hexdigest()
 
-    is_ajax = request.headers.get('X-Requested-With') == 'XMLHttpRequest'
-    
-    if is_ajax and request.method == "POST":
+    if isAjaxAndPost(request):
         form = ShortenedURLForm(request.POST)
         if form.is_valid():
             currentDateAndTime = datetime.now()
@@ -86,14 +55,9 @@ def urlAddAjax(request):
             return JsonResponse({"error": form.errors}, status=400)
     return JsonResponse({"error": "Request should be Ajax POST."}, status=400)
 
-
-
 @login_required
 def urlStatsAjax(request):
-
-    is_ajax = request.headers.get('X-Requested-With') == 'XMLHttpRequest'
-    
-    if is_ajax and request.method == "POST":
+    if isAjaxAndPost(request):
         urlId = request.POST["id"]
         myUrl = get_object_or_404(ShortenedURL, pk=urlId)
 
@@ -102,14 +66,9 @@ def urlStatsAjax(request):
         return JsonResponse({'dateAdded': dateAdded, 'timesVisited': timesVisited}, status=200)
     return JsonResponse({"error": "Request should be Ajax POST."}, status=400)
 
-
-
 @login_required
 def urlDeleteAjax(request):
-
-    is_ajax = request.headers.get('X-Requested-With') == 'XMLHttpRequest'
-    
-    if is_ajax and request.method == "POST":
+    if isAjaxAndPost(request):
         urlId = request.POST["id"]
         myUrl = get_object_or_404(ShortenedURL, pk=urlId)
         if myUrl.urlUser.id == request.user.id:
