@@ -6,8 +6,9 @@ The app is written in Python 3.10.6 and Django 4.2.1.
 
 It uses ReactJS 18.2 and Bootstrap 5 for the frontend.
 
-The app itself is in **src/shorturl**. 
+Please, see src/requirements.txt
 
+The app itself is in **src/shorturl**. 
 
 ### Dev run ###
 

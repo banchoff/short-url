@@ -19,6 +19,10 @@ RUN python3 /opt/app/shorturl/manage.py makemigrations
 RUN python3 /opt/app/shorturl/manage.py migrate
 RUN chown -R www-data:www-data /opt/app
 
+# Just in case there are temporary files...
+RUN find /opt/app/shorturl -name "*~" -exec /bin/rm {} \;
+RUN find /opt/app/shorturl -name "*.swp" -exec /bin/rm {} \;
+
 # Start server
 EXPOSE 8020
 STOPSIGNAL SIGTERM
