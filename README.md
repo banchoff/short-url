@@ -2,13 +2,21 @@
 
 URL Shortener app. Just for fun.
 
-The app is written in Python 3.10.6 and Django 4.2.1.
+The app is written in Python 3.10.6 and Django 4.2.1. For the DB we use Sqlite3.
 
 It uses ReactJS 18.2 and Bootstrap 5 for the frontend.
 
 Please, see src/requirements.txt
 
 The app itself is in **src/shorturl**. 
+
+### Creating the DB ###
+
+This is required since the app doesn't ship with the DB file.
+
+    cd src/shorturl
+    python3 manage.py makemigrations
+    python3 manage.py migrate
 
 ### Dev run ###
 
@@ -48,4 +56,5 @@ Once we have the image created, for running it just:
 	   -e DJANGO_DEBUG=False \
 	   IMAGE_NAME
 
+Note that when running the app in this mode, all data will be lost when the container is halted. 
 
