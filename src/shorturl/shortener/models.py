@@ -7,7 +7,7 @@ from django.db import models
 class URLUser(AbstractUser):
     def __str__(self):
         return self.username
-    
+
 class ShortenedURL(models.Model):
     original    = models.URLField(unique=True)
     shortened   = models.URLField()

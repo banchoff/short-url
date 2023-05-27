@@ -21,12 +21,16 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # See https://docs.djangoproject.com/en/4.2/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'django-insecure-ur*8z7y0#y3gmuhoj#1@&(vs!g_+k(80zw_4fam2x1()#o3xjk'
+# SECRET_KEY = 'django-insecure-ur*8z7y0#y3gmuhoj#1@&(vs!g_+k(80zw_4fam2x1()#o3xjk'
+SECRET_KEY = os.environ.get('DJANGO_SECRET_KEY', 'django-insecure-ur*8z7y0#y3gmuhoj#1@&(vs!g_+k(80zw_4fam2x1()#o3xjk')
+
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+#DEBUG = True
+DEBUG = os.environ.get('DJANGO_DEBUG', '') != 'False'
 
-ALLOWED_HOSTS = ["192.168.1.12", "127.0.0.1"]
+
+ALLOWED_HOSTS = ["127.0.0.1"]
 
 
 # Application definition
@@ -130,13 +134,15 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/4.2/howto/static-files/
 
 STATIC_URL = 'static/'
+#STATIC_ROOT = '/opt/app/shorturl-static'
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/4.2/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
-
+# The app runs behind a reverse proxy
+CSRF_TRUSTED_ORIGINS = ['http://127.0.0.1:8020', 'https://127.0.0.1:8020']
 
 # Number of raws displayed in users and urls tables
-TABLE_COUNT=3
+TABLE_COUNT = os.environ.get('DJANGO_TABLE_COUNT', 10)
