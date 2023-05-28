@@ -13,85 +13,85 @@ class LoginRequiredTest(TestCase):
         # When a view needs login, it redirects to this URL, which has a "next" parameter.
         self.loginRequiredURL = '/accounts/login/?next'
         
-    def test_help(self):
+    def test_help_requires_login(self):
         response = self.client.get(reverse("help"))
         self.assertEqual(response.status_code, 302)
         self.assertTrue(self.loginRequiredURL in response.url)
         
-    def test_about(self):
+    def test_about_requires_login(self):
         response = self.client.get(reverse("about"))
         self.assertEqual(response.status_code, 302)
         self.assertTrue(self.loginRequiredURL in response.url)
                 
-    def test_index(self):
+    def test_index_requires_login(self):
         response = self.client.get(reverse("index"))
         self.assertEqual(response.status_code, 302)
         self.assertTrue(self.loginRequiredURL in response.url)
                 
-    def test_user_edit(self):
+    def test_user_edit_requires_login(self):
         response = self.client.get(reverse("useredit"))
         self.assertEqual(response.status_code, 302)
         self.assertTrue(self.loginRequiredURL in response.url)
                 
-    def test_user_list(self):
+    def test_user_list_requires_login(self):
         response = self.client.get(reverse("userlist"))
         self.assertEqual(response.status_code, 302)
         self.assertTrue(self.loginRequiredURL in response.url)
         
-    def test_url_add_ajax(self):
+    def test_url_add_ajax_requires_login(self):
         response = self.client.get(reverse("urladdajax"))
         self.assertEqual(response.status_code, 302)
         self.assertTrue(self.loginRequiredURL in response.url)
         
-    def test_load_urls_ajax(self):
+    def test_load_urls_ajax_requires_login(self):
         response = self.client.get(reverse("loadurlsajax"))
         self.assertEqual(response.status_code, 302)
         self.assertTrue(self.loginRequiredURL in response.url)
         
-    def test_url_stats_ajax(self):
+    def test_url_stats_ajax_requires_login(self):
         response = self.client.get(reverse("urlstatsajax"))
         self.assertEqual(response.status_code, 302)
         self.assertTrue(self.loginRequiredURL in response.url)
         
-    def test_url_delete_ajax(self):
+    def test_url_delete_ajax_requires_login(self):
         response = self.client.get(reverse("urldeleteajax"))
         self.assertEqual(response.status_code, 302)
         self.assertTrue(self.loginRequiredURL in response.url)
         
-    def test_user_add_ajax(self):
+    def test_user_add_ajax_requires_login(self):
         response = self.client.get(reverse("useraddajax"))
         self.assertEqual(response.status_code, 302)
         self.assertTrue(self.loginRequiredURL in response.url)
         
-    def test_load_users_ajax(self):
+    def test_load_users_ajax_requires_login(self):
         response = self.client.get(reverse("loadusersajax"))
         self.assertEqual(response.status_code, 302)
         self.assertTrue(self.loginRequiredURL in response.url)
         
-    def test_user_toggle_ajax(self):
+    def test_user_toggle_ajax_requires_login(self):
         response = self.client.get(reverse("usertoggleajax"))
         self.assertEqual(response.status_code, 302)
         self.assertTrue(self.loginRequiredURL in response.url)
         
-    def test_user_delete_ajax(self):
+    def test_user_delete_ajax_requires_login(self):
         response = self.client.get(reverse("userdeleteajax"))
         self.assertEqual(response.status_code, 302)
         self.assertTrue(self.loginRequiredURL in response.url)
         
-    def test_user_change_pw_ajax(self):
+    def test_user_change_pw_ajax_requires_login(self):
         response = self.client.get(reverse("userchangepwajax"))
         self.assertEqual(response.status_code, 302)
         self.assertTrue(self.loginRequiredURL in response.url)
 
-class AdminRequiredTest(TestCase):
-    # Tests that an admin can execute the views but a staff user cannot.
+class UserTest(TestCase):
 
     def setUp(self):
         self.password = 'mypassword' 
         self.my_admin = URLUser.objects.create_superuser('admin', 'admin@example.com', self.password)
         self.my_staff = URLUser.objects.create_user('staff', 'staff@example.com', self.password)
+        self.loginRequiredURL = '/accounts/login/?next'
         
-    def test_user_list(self):
+    def test_user_list_requires_admin(self):
         c = Client()
         c.login(username=self.my_admin.username, password=self.password)
         response = c.get(reverse("userlist"))
@@ -102,9 +102,48 @@ class AdminRequiredTest(TestCase):
         response = c.get(reverse("userlist"))
         self.assertEqual(response.status_code, 302)
         self.assertEqual(response.url, reverse('index'))
+        
+    def test_admin_can_change_passwords(self):
+        # Tests that the admin can change the password to staff
+        staff_user = {
+            'id': self.my_staff.id,
+            'password1': 'fgthyju574635weavd',
+            'password2': 'fgthyju574635weavd',
+        }
+        c = Client()
+        c.login(username=self.my_admin.username, password=self.password)
+        response = c.post(reverse("userchangepwajax"), staff_user, headers={"X-Requested-With": "XMLHttpRequest"})
+        self.assertEqual(response.status_code, 200)
+        self.assertTrue('Password changed' in str(response.content))
+
+    def test_user_can_change_own_password(self):
+        # Tests that the staff can change her own password 
+        staff_user = {
+            'id': self.my_staff.id,
+            'password1': 'fgthyju574635weavd',
+            'password2': 'fgthyju574635weavd',
+        }
+        c = Client()
+        c.login(username=self.my_staff.username, password=self.password)
+        response = c.post(reverse("userchangepwajax"), staff_user, headers={"X-Requested-With": "XMLHttpRequest"})
+        self.assertEqual(response.status_code, 200)
+        self.assertTrue('Password changed' in str(response.content))
+
+    def test_user_cannot_change_other_user_password(self):
+        other_user = URLUser.objects.create_user('other', 'other@example.com', 'dsfgthy63524e')
+        change_data = {
+            'id': other_user.id,
+            'password1': 'fgthyju574635weavd',
+            'password2': 'fgthyju574635weavd',
+        }
+        c = Client()
+        c.login(username=self.my_staff.username, password=self.password)
+        response = c.post(reverse("userchangepwajax"), change_data, headers={"X-Requested-With": "XMLHttpRequest"})
+        self.assertEqual(response.status_code, 400)
+        self.assertTrue('User has no permission' in str(response.content))
 
         
-class AdminRequiredTestAjax(TestCase):
+class UserAjaxTest(TestCase):
     # Tests that an admin can execute the views but a staff user cannot.
     # This is for views that expect requests made using Ajax.
 
@@ -113,167 +152,153 @@ class AdminRequiredTestAjax(TestCase):
         self.my_admin = URLUser.objects.create_superuser('admin', 'admin@example.com', self.password)
         self.my_staff = URLUser.objects.create_user('staff', 'staff@example.com', self.password)
         self.loginRequiredURL = '/accounts/login/?next'
-        
-    def test_user_delete_ajax(self):
+
+    def test_user_delete_non_ajax_post(self):
         c = Client()
         c.login(username=self.my_admin.username, password=self.password)
-        
-        # First tries using a non-ajax post.
         idToDelete = self.my_staff.id
         response = c.post(reverse("userdeleteajax"), {'id': idToDelete})
         self.assertEqual(response.status_code, 400)
         self.assertTrue("Request should be Ajax POST" in str(response.content))
 
-        # Then tries using an ajax post. But with a non-existent user.
+    def test_user_delete_ajax_non_existent_user(self):
+        c = Client()
+        c.login(username=self.my_admin.username, password=self.password)
         idToDelete = self.my_staff.id + self.my_admin.id
         response = c.post(reverse("userdeleteajax"), {'id': idToDelete}, headers={"X-Requested-With": "XMLHttpRequest"})
         self.assertEqual(response.status_code, 404)
-        
-        # Now we try to delete our own user
+
+    def test_user_delete_own_user(self):
+        c = Client()
+        c.login(username=self.my_admin.username, password=self.password)
         idToDelete = self.my_admin.id
         response = c.post(reverse("userdeleteajax"), {'id': idToDelete}, headers={"X-Requested-With": "XMLHttpRequest"})
         self.assertEqual(response.status_code, 400)
         self.assertTrue("User cannot delete herself" in str(response.content))
-        
-        # Finally, we try deleting another user.
+
+    def test_user_delete(self):
+        c = Client()
+        c.login(username=self.my_admin.username, password=self.password)
+        userCount = len(URLUser.objects.all())
         idToDelete = self.my_staff.id
         response = c.post(reverse("userdeleteajax"), {'id': idToDelete}, headers={"X-Requested-With": "XMLHttpRequest"})
         self.assertEqual(response.status_code, 200)
         self.assertTrue("User deleted" in str(response.content))
-
-        c.logout()
-        c.login(username=self.my_staff.username, password=self.password)
-        response = c.post(reverse("userdeleteajax"), {'id': idToDelete}, headers={"X-Requested-With": "XMLHttpRequest"})
-        self.assertEqual(response.status_code, 302)
-        self.assertTrue(self.loginRequiredURL in response.url)
-
-
-        
-    def test_user_toggle_ajax(self):
+        self.assertTrue(len(URLUser.objects.all()) == userCount-1)
+    
+    def test_staff_user_cannot_change_other_users(self): 
         c = Client()
-        c.login(username=self.my_admin.username, password=self.password)
-        
-        # First tries using a non-ajax post.
-        idToToggle = self.my_staff.id
-        response = c.post(reverse("usertoggleajax"), {'id': idToToggle})
-        self.assertEqual(response.status_code, 400)
-        self.assertTrue("Request should be Ajax POST" in str(response.content))
-
-        # Then tries using an ajax post. But with a non-existent user.
-        idToToggle = self.my_staff.id + self.my_admin.id
-        response = c.post(reverse("usertoggleajax"), {'id': idToToggle}, headers={"X-Requested-With": "XMLHttpRequest"})
-        self.assertEqual(response.status_code, 404)
-        
-        # Now we try to toggle our own user
-        idToToggle = self.my_admin.id
-        response = c.post(reverse("usertoggleajax"), {'id': idToToggle}, headers={"X-Requested-With": "XMLHttpRequest"})
-        self.assertEqual(response.status_code, 400)
-        self.assertTrue("Cannot change your own user" in str(response.content))
-        
-        # Finally, we try to change another user.
-        idToToggle = self.my_staff.id
-        response = c.post(reverse("usertoggleajax"), {'id': idToToggle}, headers={"X-Requested-With": "XMLHttpRequest"})
-        self.assertEqual(response.status_code, 200)
-        self.assertTrue("ADMIN" in str(response.content))
-
-        c.logout()
         c.login(username=self.my_staff.username, password=self.password)
         other_staff = URLUser.objects.create_user('staff2', 'staff2@example.com', 'sadasddsf123123sad')
         idToToggle = other_staff.id
         response = c.post(reverse("usertoggleajax"), {'id': idToToggle}, headers={"X-Requested-With": "XMLHttpRequest"})
-        #self.assertEqual(reverse('index'), response.url)
-        self.assertEqual("", response.userState)
+        self.assertEqual(reverse('index'), response.url)
         self.assertEqual(response.status_code, 302)
+        other_staff.delete()
 
-        
-    def test_user_add_ajax(self):
+    def test_user_change_with_non_ajax_post(self):
         c = Client()
         c.login(username=self.my_admin.username, password=self.password)
+        idToToggle = self.my_staff.id
+        response = c.post(reverse("usertoggleajax"), {'id': idToToggle})
+        self.assertEqual(response.status_code, 400)
+        self.assertTrue("Request should be Ajax POST" in str(response.content))
+    
+    def test_changing_non_existent_user(self):
+        c = Client()
+        c.login(username=self.my_admin.username, password=self.password)
+        idToToggle = self.my_staff.id + self.my_admin.id
+        response = c.post(reverse("usertoggleajax"), {'id': idToToggle}, headers={"X-Requested-With": "XMLHttpRequest"})
+        self.assertEqual(response.status_code, 404)
+
+    def test_changing_own_user(self):
+        c = Client()
+        c.login(username=self.my_admin.username, password=self.password)
+        idToToggle = self.my_admin.id
+        response = c.post(reverse("usertoggleajax"), {'id': idToToggle}, headers={"X-Requested-With": "XMLHttpRequest"})
+        self.assertEqual(response.status_code, 400)
+        self.assertTrue("Cannot change your own user" in str(response.content))
+
+    def test_change_another_user(self):
+        c = Client()
+        c.login(username=self.my_admin.username, password=self.password)
+        idToToggle = self.my_staff.id
+        response = c.post(reverse("usertoggleajax"), {'id': idToToggle}, headers={"X-Requested-With": "XMLHttpRequest"})
+        self.assertEqual(response.status_code, 200)
+        self.assertTrue("ADMIN" in str(response.content))
         
-        # First tries using a non-ajax post.
-        user_with_repeated_username = {
-            'username': self.my_staff.username,
-            'email': self.my_staff.email,
-            'password1': 'mypassword',
-            'password2': 'mypassword',}
-        user_with_missmatching_passwords = {
-            'username': 'testuser1',
-            'email': 'testuser1@example.com',
-            'password1': 'mypassword',
-            'password2': 'otherpassword',}
-        user_with_wrong_email = {
-            'username': 'testuser2',
-            'email': 'testuser2',
-            'password1': 'mypassword',
-            'password2': 'mypassword',}
+    def test_add_user_with_non_ajax_post(self):
         user_well_formed = {
             'username': 'testuser3',
             'email': 'testuser3@example.com',
             'password1': 'asd!#as213',
             'password2': 'asd!#as213',}
-
-        # We try to add a user not using ajax        
+        c = Client()
+        c.login(username=self.my_admin.username, password=self.password)
         response = c.post(reverse("useraddajax"), user_well_formed)
         self.assertEqual(response.status_code, 400)
         self.assertTrue("Request should be Ajax POST" in str(response.content))
-        
-        # We try to add a user with a username that already exists
+
+    def test_add_user_with_wrong_username(self):
+        user_with_repeated_username = {
+            'username': self.my_staff.username,
+            'email': self.my_staff.email,
+            'password1': 'mypassword',
+            'password2': 'mypassword',}
+        c = Client()
+        c.login(username=self.my_admin.username, password=self.password)
         response = c.post(reverse("useraddajax"), user_with_repeated_username, headers={"X-Requested-With": "XMLHttpRequest"})
         self.assertEqual(response.status_code, 400)
         self.assertTrue("error" in str(response.content))
-        
-        # We try to add a user with passwords that don't match
+
+    def test_add_user_with_missmatching_passwords(self):
+        user_with_missmatching_passwords = {
+            'username': 'testuser1',
+            'email': 'testuser1@example.com',
+            'password1': 'mypassword',
+            'password2': 'otherpassword',}
+        c = Client()
+        c.login(username=self.my_admin.username, password=self.password)
         response = c.post(reverse("useraddajax"), user_with_missmatching_passwords, headers={"X-Requested-With": "XMLHttpRequest"})
         self.assertEqual(response.status_code, 400)
         self.assertTrue("error" in str(response.content))
 
-        # We try to add a user with a wrong email
+    def test_add_user_with_wrong_email(self):
+        user_with_wrong_email = {
+            'username': 'testuser2',
+            'email': 'testuser2',
+            'password1': 'mypassword',
+            'password2': 'mypassword',}
+        c = Client()
+        c.login(username=self.my_admin.username, password=self.password)
         response = c.post(reverse("useraddajax"), user_with_wrong_email, headers={"X-Requested-With": "XMLHttpRequest"})
         self.assertEqual(response.status_code, 400)
         self.assertTrue("error" in str(response.content))
 
-        # We add a user correctly
+    def test_add_user(self):
+        user_well_formed = {
+            'username': 'testuser3',
+            'email': 'testuser3@example.com',
+            'password1': 'asd!#as213',
+            'password2': 'asd!#as213',}
+        c = Client()
+        c.login(username=self.my_admin.username, password=self.password)
+        userCount = len(URLUser.objects.all())
         response = c.post(reverse("useraddajax"), user_well_formed, headers={"X-Requested-With": "XMLHttpRequest"})
         self.assertEqual(response.status_code, 200)
         self.assertTrue("User created" in str(response.content))
+        self.assertTrue(len(URLUser.objects.all()) == userCount + 1)
 
-        c.logout()
+    def test_non_admin_user_cannot_add_user(self):
+        user_well_formed = {
+            'username': 'testuser3',
+            'email': 'testuser3@example.com',
+            'password1': 'asd!#as213',
+            'password2': 'asd!#as213',}
+        
+        c = Client()
         c.login(username=self.my_staff.username, password=self.password)
         response = c.post(reverse("useraddajax"), user_well_formed, headers={"X-Requested-With": "XMLHttpRequest"})
         self.assertEqual(response.status_code, 302)
         self.assertEqual(reverse('index'), response.url)
-
-
-
-        
-
-class CanChangeHerself(TestCase):
-    # Tests method where a user can change her own data, but not other's data.
-    pass
-    # def userChangePWAjax(request):
-    #     def userEdit(request):
-
-    
-# def userLoadAjax(request):    
-# def userDeleteAjax(request):
-# def userList(request):
-# def userToggleAjax(request):
-# def userAddAjax(request):
-
-    # path("", url.index, name="index"),
-    # path("url/add/ajax", url.urlAddAjax, name="urladdajax"),
-    # path("url/load/ajax", url.urlLoadAjax, name="loadurlsajax"),
-    # path("url/stats/ajax", url.urlStatsAjax, name="urlstatsajax"),
-    # path("url/delete/ajax", url.urlDeleteAjax, name="urldeleteajax"),
-
-    # path("user/edit", user.userEdit, name="useredit"),
-    # path("user/add/ajax", user.userAddAjax, name="useraddajax"),
-    # path("user/load/ajax", user.userLoadAjax, name="loadusersajax"),
-    # path("user/list", user.userList, name="userlist"),
-    # path("user/toggle/ajax", user.userToggleAjax, name="usertoggleajax"),
-    # path("user/delete/ajax", user.userDeleteAjax, name="userdeleteajax"),
-    # path("user/changepw/ajax", user.userChangePWAjax, name="userchangepwajax"),
-
-
-
         

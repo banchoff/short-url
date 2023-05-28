@@ -57,7 +57,7 @@ def userChangePWAjax(request):
         password2 = request.POST["password2"]
         if password1 != password2:
             return JsonResponse({"error": "Passwords do not match."}, status=400)
-        userId = request.POST["id"]
+        userId = int(request.POST["id"])
         if request.user.id == userId:
             # Changes own password. OK
             aUser = URLUser.objects.get(pk=userId)
