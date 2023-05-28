@@ -83,6 +83,103 @@ class LoginRequiredTest(TestCase):
         self.assertEqual(response.status_code, 302)
         self.assertTrue(self.loginRequiredURL in response.url)
 
+class UrlTest(TestCase):
+
+    def setUp(self):
+        self.password = 'mypassword' 
+        self.my_admin = URLUser.objects.create_superuser('admin', 'admin@example.com', self.password)
+        self.my_staff = URLUser.objects.create_user('staff', 'staff@example.com', self.password)
+        self.other_user = URLUser.objects.create_user('staff2', 'staff2@example.com', self.password)
+        self.loginRequiredURL = '/accounts/login/?next'
+        pass
+
+    def test_add_url(self):
+        c = Client()
+        c.login(username=self.my_admin.username, password=self.password)
+        url = {'original': 'https://matias.banchoff.ar'}
+        urlCount = len(ShortenedURL.objects.all())
+        response = c.post(reverse("urladdajax"), url, headers={"X-Requested-With": "XMLHttpRequest"})
+        self.assertEqual(response.status_code, 200)
+        self.assertTrue('URL created' in str(response.content))
+        self.assertTrue(len(ShortenedURL.objects.all()) == urlCount + 1)
+
+    def test_add_url_without_ajax(self):
+        c = Client()
+        c.login(username=self.my_admin.username, password=self.password)
+        url = {'original': 'https://matias.banchoff.ar'}
+        urlCount = len(ShortenedURL.objects.all())
+        response = c.post(reverse("urladdajax"), url)
+        self.assertEqual(response.status_code, 400)
+        self.assertTrue('Request should be Ajax POST' in str(response.content))
+        self.assertTrue(len(ShortenedURL.objects.all()) == urlCount)
+
+    def test_add_url_too_long(self):
+        c = Client()
+        c.login(username=self.my_admin.username, password=self.password)
+        url = {'original': 'http://matias.banchoff.ar/'+'a'*250}
+        urlCount = len(ShortenedURL.objects.all())
+        response = c.post(reverse("urladdajax"), url, headers={"X-Requested-With": "XMLHttpRequest"})
+        self.assertEqual(response.status_code, 400)
+        self.assertTrue('Ensure this value has at most 200 characters' in str(response.content))
+        self.assertTrue(len(ShortenedURL.objects.all()) == urlCount)
+
+    def test_add_malformed_url(self):
+        c = Client()
+        c.login(username=self.my_admin.username, password=self.password)
+        url = {'original': 'http:\/matias.banchoff.ar/'}
+        urlCount = len(ShortenedURL.objects.all())
+        response = c.post(reverse("urladdajax"), url, headers={"X-Requested-With": "XMLHttpRequest"})
+        self.assertEqual(response.status_code, 400)
+        self.assertTrue('Enter a valid URL' in str(response.content))
+        self.assertTrue(len(ShortenedURL.objects.all()) == urlCount)
+
+    # def test_delete_url(self):
+    #     c = Client()
+    #     c.login(username=self.my_admin.username, password=self.password)        
+    #     url = {'original': 'http:\/matias.banchoff.ar/'}
+    #     urlCount = len(ShortenedURL.objects.all())
+    #     response = c.post(reverse("urldeleteajax"), url, headers={"X-Requested-With": "XMLHttpRequest"})
+    #     self.assertEqual(response.status_code, 400)
+    #     self.assertTrue('Enter a valid URL' in str(response.content))
+    #     self.assertTrue(len(ShortenedURL.objects.all()) == urlCount)
+
+    # def test_delete_other_users_url(self):
+    #     c = Client()
+    #     response = c.get(reverse("urldeleteajax"))
+    #     pass
+
+    # def test_delete_nonexistent_url(self):
+    #     c = Client()
+    #     response = c.get(reverse("urldeleteajax"))
+    #     pass
+
+    # def test_get_stats_for_a_url(self):
+    #     c = Client()
+    #     response = c.get(reverse("urlstatsajax"))
+    #     pass
+
+    # def test_get_stats_for_nonexistent_url(self):
+    #     c = Client()
+    #     response = c.get(reverse("urlstatsajax"))
+    #     pass
+
+    # def test_get_stats_for_other_users_url(self):
+    #     c = Client()
+    #     response = c.get(reverse("urlstatsajax"))
+    #     pass
+    
+    # def test_url_redirect(self):
+    #     c = Client()
+    #     response = c.get(reverse("redirectto"))
+    #     pass
+    
+    # def test_url_creates_access(self):
+    #     Tests anAccess is created when a URL is visited
+    #     c = Client()
+    #     response = c.get(reverse("redirectto"))
+    #     pass
+
+        
 class UserTest(TestCase):
 
     def setUp(self):
@@ -288,6 +385,36 @@ class UserAjaxTest(TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertTrue("User created" in str(response.content))
         self.assertTrue(len(URLUser.objects.all()) == userCount + 1)
+
+    def test_add_user_with_username_too_long(self):
+        # Username's length defaults to a max. of 150 chars
+        user = {
+            'username': 'a'*151,
+            'email': 'testuser3@example.com',
+            'password1': 'asd!#as213',
+            'password2': 'asd!#as213',}
+        c = Client()
+        c.login(username=self.my_admin.username, password=self.password)
+        userCount = len(URLUser.objects.all())
+        response = c.post(reverse("useraddajax"), user, headers={"X-Requested-With": "XMLHttpRequest"})
+        self.assertEqual(response.status_code, 400)
+        self.assertTrue("Ensure this value has at most 150 characters (it has 151)" in str(response.content))
+        self.assertTrue(len(URLUser.objects.all()) == userCount)
+
+    def test_add_user_without_valid_email(self):
+        user = {
+            'username': 'test1',
+            'email': 'testuser3@without@email',
+            'password1': 'asd!#as213',
+            'password2': 'asd!#as213',}
+        c = Client()
+        c.login(username=self.my_admin.username, password=self.password)
+        userCount = len(URLUser.objects.all())
+        response = c.post(reverse("useraddajax"), user, headers={"X-Requested-With": "XMLHttpRequest"})
+        self.assertEqual(response.status_code, 400)
+        self.assertTrue("Enter a valid email address" in str(response.content))
+        self.assertTrue(len(URLUser.objects.all()) == userCount)
+
 
     def test_non_admin_user_cannot_add_user(self):
         user_well_formed = {
