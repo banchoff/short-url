@@ -5,7 +5,7 @@ from shortener.views.user import *
 from shortener.views.common import *
 from shortener.models import URLUser
 from django.urls import reverse
-
+from django.urls.exceptions import NoReverseMatch
 
 
 class LoginRequiredTest(TestCase):
@@ -133,51 +133,112 @@ class UrlTest(TestCase):
         self.assertTrue('Enter a valid URL' in str(response.content))
         self.assertTrue(len(ShortenedURL.objects.all()) == urlCount)
 
-    # def test_delete_url(self):
-    #     c = Client()
-    #     c.login(username=self.my_admin.username, password=self.password)        
-    #     url = {'original': 'http:\/matias.banchoff.ar/'}
-    #     urlCount = len(ShortenedURL.objects.all())
-    #     response = c.post(reverse("urldeleteajax"), url, headers={"X-Requested-With": "XMLHttpRequest"})
-    #     self.assertEqual(response.status_code, 400)
-    #     self.assertTrue('Enter a valid URL' in str(response.content))
-    #     self.assertTrue(len(ShortenedURL.objects.all()) == urlCount)
+    def test_delete_url(self):
+        c = Client()
+        c.login(username=self.my_admin.username, password=self.password)
+        url = ShortenedURL.create("https://matias.banchoff.ar", self.my_admin)
+        url.save()
+        urlCount = len(ShortenedURL.objects.all())
+        response = c.post(reverse("urldeleteajax"), {'id': url.id }, headers={"X-Requested-With": "XMLHttpRequest"})
+        self.assertEqual(response.status_code, 200)
+        self.assertTrue('URL deleted' in str(response.content))
+        self.assertTrue(len(ShortenedURL.objects.all()) == urlCount - 1)
 
-    # def test_delete_other_users_url(self):
-    #     c = Client()
-    #     response = c.get(reverse("urldeleteajax"))
-    #     pass
+    def test_delete_other_users_url(self):
+        c = Client()
+        c.login(username=self.my_staff.username, password=self.password)
+        url = ShortenedURL.create("https://matias.banchoff.ar", self.other_user)
+        url.save()
+        urlCount = len(ShortenedURL.objects.all())
+        response = c.post(reverse("urldeleteajax"), {'id': url.id }, headers={"X-Requested-With": "XMLHttpRequest"})
+        self.assertEqual(response.status_code, 400)
+        self.assertTrue('User does not own this URL' in str(response.content))
+        self.assertTrue(len(ShortenedURL.objects.all()) == urlCount)
+        c = Client()
+        response = c.get(reverse("urldeleteajax"))
 
-    # def test_delete_nonexistent_url(self):
-    #     c = Client()
-    #     response = c.get(reverse("urldeleteajax"))
-    #     pass
+    def test_delete_nonexistent_url(self):
+        c = Client()
+        c.login(username=self.my_admin.username, password=self.password)
+        urlCount = len(ShortenedURL.objects.all())
+        response = c.post(reverse("urldeleteajax"), {'id': -1 }, headers={"X-Requested-With": "XMLHttpRequest"})
+        self.assertEqual(response.status_code, 404)
+        self.assertTrue(len(ShortenedURL.objects.all()) == urlCount)
 
-    # def test_get_stats_for_a_url(self):
-    #     c = Client()
-    #     response = c.get(reverse("urlstatsajax"))
-    #     pass
+    def test_get_stats_for_a_url(self):
+        c = Client()
+        c.login(username=self.my_staff.username, password=self.password)
+        url = ShortenedURL.create("https://matias.banchoff.ar", self.my_staff)
+        url.save()
+        response = c.post(reverse("urlstatsajax"), {'id': url.id }, headers={"X-Requested-With": "XMLHttpRequest"})
+        self.assertEqual(response.status_code, 200)
+        self.assertTrue('timesVisited' in str(response.content))
 
-    # def test_get_stats_for_nonexistent_url(self):
-    #     c = Client()
-    #     response = c.get(reverse("urlstatsajax"))
-    #     pass
+    def test_get_stats_for_a_url_without_ajax(self):
+        c = Client()
+        c.login(username=self.my_staff.username, password=self.password)
+        url = ShortenedURL.create("https://matias.banchoff.ar", self.my_staff)
+        url.save()
+        response = c.post(reverse("urlstatsajax"), {'id': url.id })
+        self.assertEqual(response.status_code, 400)
+        self.assertTrue('Request should be Ajax POST' in str(response.content))
 
-    # def test_get_stats_for_other_users_url(self):
-    #     c = Client()
-    #     response = c.get(reverse("urlstatsajax"))
-    #     pass
+        
+    def test_get_stats_for_nonexistent_url(self):
+        c = Client()
+        c.login(username=self.my_staff.username, password=self.password)
+        response = c.post(reverse("urlstatsajax"), {'id': -1 }, headers={"X-Requested-With": "XMLHttpRequest"})
+        self.assertEqual(response.status_code, 404)
+
+    def test_get_stats_for_other_users_url(self):
+        c = Client()
+        c.login(username=self.my_staff.username, password=self.password)
+        url = ShortenedURL.create("https://matias.banchoff.ar", self.other_user)
+        url.save()
+        response = c.post(reverse("urlstatsajax"), {'id': url.id }, headers={"X-Requested-With": "XMLHttpRequest"})
+        self.assertEqual(response.status_code, 400)
+        self.assertTrue('User does not own this URL' in str(response.content))
     
-    # def test_url_redirect(self):
-    #     c = Client()
-    #     response = c.get(reverse("redirectto"))
-    #     pass
+    def test_url_redirect(self):
+        c = Client()
+        c.login(username=self.my_staff.username, password=self.password)
+        url = ShortenedURL.create("https://matias.banchoff.ar", self.my_staff)
+        url.save()
+        response = c.get(reverse("redirectto", args=[url.shortened]))
+        self.assertEqual(response.status_code, 302)
+
+    def test_url_redirect_for_other_users_url(self):
+        c = Client()
+        c.login(username=self.my_staff.username, password=self.password)
+        url = ShortenedURL.create("https://matias.banchoff.ar", self.other_user)
+        url.save()
+        response = c.get(reverse("redirectto", args=[url.shortened]))
+        self.assertEqual(response.status_code, 400)
+        self.assertTrue('User does not own this URL' in str(response.content))
     
-    # def test_url_creates_access(self):
-    #     Tests anAccess is created when a URL is visited
-    #     c = Client()
-    #     response = c.get(reverse("redirectto"))
-    #     pass
+    def test_url_redirect_for_nonexistent_url(self):
+        c = Client()
+        c.login(username=self.my_staff.username, password=self.password)
+        response = c.get(reverse("redirectto", args=["a"*32]))
+        self.assertEqual(response.status_code, 404)
+
+    def test_url_redirect_for_malformed_url(self):
+        c = Client()
+        c.login(username=self.my_staff.username, password=self.password)
+        try:
+            response = c.get(reverse("redirectto", args=["abcd"]))
+            self.fail("NoReverseMatch was not raised")
+        except NoReverseMatch:
+            pass
+        
+    def test_url_creates_access(self):
+        c = Client()
+        c.login(username=self.my_staff.username, password=self.password)
+        url = ShortenedURL.create("https://matias.banchoff.ar", self.my_staff)
+        url.save()
+        accessCount = len(Access.objects.all())
+        response = c.get(reverse("redirectto", args=[url.shortened]))
+        self.assertTrue(len(Access.objects.all()) == accessCount + 1)
 
         
 class UserTest(TestCase):
@@ -241,9 +302,7 @@ class UserTest(TestCase):
 
         
 class UserAjaxTest(TestCase):
-    # Tests that an admin can execute the views but a staff user cannot.
     # This is for views that expect requests made using Ajax.
-
     def setUp(self):
         self.password = 'mypassword' 
         self.my_admin = URLUser.objects.create_superuser('admin', 'admin@example.com', self.password)
