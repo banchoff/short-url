@@ -4,8 +4,6 @@ from django.http import HttpResponseRedirect, JsonResponse
 from django.contrib.auth.decorators import login_required
 from ..models import ShortenedURL, URLUser
 from ..forms import ShortenedURLForm
-from datetime import datetime
-import hashlib
 from .common import isAjaxAndPost, objectLoadAjax
     
 @login_required
@@ -28,22 +26,11 @@ def urlLoadAjax(request):
 
 @login_required
 def urlAddAjax(request):
-    def getUniqueShorterURL(longUrl):
-        urlHashed = hashlib.md5(longUrl.encode())
-        return urlHashed.hexdigest()
-
     if isAjaxAndPost(request):
         form = ShortenedURLForm(request.POST)
         if form.is_valid():
-            currentDateAndTime = datetime.now()
-            currentDate = currentDateAndTime.strftime("%Y-%m-%d")
-            currentTime = currentDateAndTime.strftime("%H:%M:%S")
-            myUrl = form.save(commit=False)
-            myUrl.shortened = getUniqueShorterURL(myUrl.original)
-            myUrl.dateCreated = currentDate
-            myUrl.hourCreated = currentTime
-            myUrl.urlUser = request.user
-            myUrl.save()
+            shortenedURL = ShortenedURL.create(request.POST["original"], request.user)
+            shortenedURL.save()
             return JsonResponse({"success": "URL created."}, status=200)
         else:
             return JsonResponse({"error": form.errors}, status=400)
@@ -54,9 +41,12 @@ def urlStatsAjax(request):
     if isAjaxAndPost(request):
         urlId = request.POST["id"]
         myUrl = get_object_or_404(ShortenedURL, pk=urlId)
-        dateAdded = myUrl.dateCreated
-        timesVisited = myUrl.access_set.all().count()
-        return JsonResponse({'dateAdded': dateAdded, 'timesVisited': timesVisited}, status=200)
+        if myUrl.urlUser.id == request.user.id:
+            dateAdded = myUrl.dateCreated
+            timesVisited = myUrl.access_set.all().count()
+            return JsonResponse({'dateAdded': dateAdded, 'timesVisited': timesVisited}, status=200)
+        else:
+            return JsonResponse({"error": "User does not own this URL."}, status=400)
     return JsonResponse({"error": "Request should be Ajax POST."}, status=400)
 
 @login_required

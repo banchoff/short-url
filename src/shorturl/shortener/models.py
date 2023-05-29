@@ -1,5 +1,7 @@
 from django.contrib.auth.models import AbstractUser
 from django.db import models
+from datetime import datetime
+import hashlib
 
 # Create your models here.
 
@@ -15,6 +17,18 @@ class ShortenedURL(models.Model):
     hourCreated = models.TimeField()
     urlUser     = models.ForeignKey(URLUser, on_delete=models.CASCADE)
 
+    @classmethod
+    def create(cls, origURL, urlUser):
+        def getUniqueShorterURL(longUrl):
+            urlHashed = hashlib.md5(longUrl.encode())
+            return urlHashed.hexdigest()
+        currentDateAndTime = datetime.now()
+        currentDate = currentDateAndTime.strftime("%Y-%m-%d")
+        currentTime = currentDateAndTime.strftime("%H:%M:%S")
+        myUrl = cls(original=origURL, shortened=getUniqueShorterURL(origURL), dateCreated = currentDate, hourCreated = currentTime, urlUser = urlUser)
+        return myUrl
+    
+    
 class Access(models.Model):
     navigator    = models.CharField(max_length=100)
     dateAccesed  = models.DateField()
@@ -24,8 +38,6 @@ class Access(models.Model):
 
     @classmethod
     def create(cls, navigator, ip, shortenedURL):
-
-        from datetime import datetime
 
         currentDateAndTime = datetime.now()
         currentDate = currentDateAndTime.strftime("%Y-%m-%d")

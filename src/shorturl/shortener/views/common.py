@@ -1,7 +1,7 @@
 from django.shortcuts import render, redirect, get_object_or_404
 from django.conf import settings
 from django.core.paginator import Paginator
-from django.http import JsonResponse
+from django.http import HttpResponse, JsonResponse
 from django.contrib.auth.decorators import login_required
 from ..models import Access, ShortenedURL#, URLUser
 from django.urls import reverse_lazy
@@ -55,13 +55,19 @@ class SignUpView(CreateView):
     template_name = "registration/signup.html"
 
 def redirectTo(request, shortUrl):
-    if len(shortUrl) == 32:
-        # TODO: When a user saves the same URL more than once, there is an error.
-        # Solution: if the URL already exists, don't add it.
-        myUrl = get_object_or_404(ShortenedURL, shortened = shortUrl)
-        anAccess = Access.create(request.headers["User-Agent"], request.META["REMOTE_ADDR"], myUrl)     
+    myUrl = get_object_or_404(ShortenedURL, shortened = shortUrl)
+    if myUrl.urlUser.id == request.user.id:
+        userAgent = "None"
+        remoteAdr = "0.0.0.0"
+        if "User-Agent" in request.headers:
+            userAgent = request.headers["User-Agent"]
+        if "REMOTE_ADDR" in request.META:
+            remoteAddr = request.META["REMOTE_ADDR"]
+        anAccess = Access.create(userAgent, remoteAddr, myUrl)     
         anAccess.save()
         return redirect(myUrl.original)
+    else:
+        return HttpResponse("Error: User does not own this URL.", status=400)
 
 @login_required
 def help(request):
