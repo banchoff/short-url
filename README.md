@@ -58,3 +58,16 @@ Once we have the image created, for running it just:
 
 Note that when running the app in this mode, all data will be lost when the container is halted. 
 
+### Testing the Docker image ###
+
+You can test the Docker image by running:
+
+	./test_build.sh
+
+This script has a few steps:
+
+* it creates the Docker image, 
+* lunches a container based on that image, 
+* tests if the given user can or cannot log in,
+* and the destroys the container and the image just created.
+
