@@ -89,9 +89,9 @@
 					<td>{row.original}</td>
 					<td><a id={`shortURL-${row.id}`} href={`${row.shortened}`} target="_blank">{row.shortened}</a></td>
 					<td>
-					<button id={`copyURLBTN-${row.id}`} data-id={`${row.id}`} onClick={copyURL} type="button" className="btn btn-outline-primary">Copiar URL</button>
-					<button data-id={`${row.id}`} data-txt={`${row.original}`} type="button" className="btn btn-outline-info showURLStatsButton" data-bs-toggle="modal" data-bs-target="#statsURLModal">Estadísticas</button>  
-					<button id={`deleteURLBTN-${row.id}`} data-id={`${row.id}`} data-txt={`${row.original}`} onClick={showModalDeleteURL} type="button" className="btn btn-outline-danger deleteURLModalButton" data-bs-toggle="modal" data-bs-target="#deleteURLModal">Borrar</button> 
+					<button id={`copyURLBTN-${row.id}`} data-id={`${row.id}`} onClick={copyURL} type="button" className="btn btn-outline-primary">Copy URL</button>
+					<button data-id={`${row.id}`} data-txt={`${row.original}`} type="button" className="btn btn-outline-info showURLStatsButton" data-bs-toggle="modal" data-bs-target="#statsURLModal">Stats</button>  
+					<button id={`deleteURLBTN-${row.id}`} data-id={`${row.id}`} data-txt={`${row.original}`} onClick={showModalDeleteURL} type="button" className="btn btn-outline-danger deleteURLModalButton" data-bs-toggle="modal" data-bs-target="#deleteURLModal">Delete</button> 
 					 </td>
 				      </tr>
 				))}

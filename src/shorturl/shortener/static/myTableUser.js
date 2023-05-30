@@ -96,14 +96,14 @@ class MyTable extends React.Component {
 			type="button"
 			className="btn btn-outline-primary toggleUserAdminButton"
 			id={`toggleUserAdminButton-${row.id}`}>
-			    {row.is_superuser ? ( "Quitar admin" ) : ( "Hacer admin" )}</button>
+			    {row.is_superuser ? ( "Drop admin" ) : ( "Make admin" )}</button>
 			    
 			    <button
 			data-user-id={`${row.id}`}
 			type="button"
 			className="btn btn-outline-info changePasswordModalButton"
 			data-bs-toggle="modal"
-			data-bs-target="#changePasswordUserModal">Cambiar clave</button>  
+			data-bs-target="#changePasswordUserModal">Change password</button>  
 			    
 			    <button
 			data-user-id={`${row.id}`}
@@ -112,7 +112,7 @@ class MyTable extends React.Component {
 			className="btn btn-outline-danger deleteUserModalButton"
 			data-bs-toggle="modal"
 			data-bs-target="#deleteUserModal"
-			id={`deleteUserModalButton-${row.id}`}>Borrar</button>
+			id={`deleteUserModalButton-${row.id}`}>Delete</button>
 			    
 			
 			</td>

@@ -48,11 +48,11 @@ $(document).on("click", ".toggleUserAdminButton", function () {
 	    msg = "User changed. Now user "
 	    if (response.userState == "ADMIN") {
 		msg += "is Admin"
-		$("#toggleUserAdminButton-"+userId).html("Quitar admin")
+		$("#toggleUserAdminButton-"+userId).html("Drop admin")
 	    }
 	    if (response.userState == "NOTADMIN") {
 		msg += "is NOT Admin"
-		$("#toggleUserAdminButton-"+userId).html("Hacer admin")
+		$("#toggleUserAdminButton-"+userId).html("Make admin")
 	    }
 	    $("#toggleUserBody").html(msg)
 	    $("#liveToast").toast("show");

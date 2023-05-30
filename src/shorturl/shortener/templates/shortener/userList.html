@@ -56,11 +56,11 @@
 	<form action="{% url 'userchangepwajax' %}" method="post" id="changeUserPasswordForm">
 	  <input type="hidden" name="id" id="UserChangePassword">
 	  <div>
-	    <label class="form-password-label" for="password1">Clave: </label>
+	    <label class="form-password-label" for="password1">Password: </label>
 	    <input type="password" class="form-password-input" id="password1">
 	  </div>
 	  <div>
-	    <label class="form-password-label" for="password2">Repetir Clave: </label>
+	    <label class="form-password-label" for="password2">Repeat password: </label>
 	    <input type="password" class="form-password-input" id="password2">
 	  </div>
 	</form>
@@ -84,12 +84,12 @@
       </div>
       <div class="modal-body">
 	<div class="" id="delete_user_alerts" role="alert"></div>
-	<p>¿Borrar el usuario <span id="UserToDelete" data-user-id=""></span>?</p>
-	<p>Se borrarán también las URLS y estadísticas relacionadas.</p>
+	<p>Delete user <span id="UserToDelete" data-user-id=""></span>?</p>
+	<p>All related URLs and stats will be deleted, too.</p>
       </div>
       <div class="modal-footer">
-	<button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
-	<button onClick="deleteUser();" type="button" class="btn btn-danger">Borrar Usuario</button>
+	<button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+	<button onClick="deleteUser();" type="button" class="btn btn-danger">Delete user</button>
       </div>
     </div>
   </div>
